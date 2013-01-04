@@ -10,10 +10,9 @@ from modsecurity_exception_factory.modsecurity_audit_entry_data_source.modsecuri
     ModsecurityAuditEntryDataSourceSQL
 from modsecurity_exception_factory.modsecurity_audit_log_parser.modsecurity_audit_log_parser import \
     ModsecurityAuditLogParser
-from tests.data import MODSECURITY_AUDIT_LOG_SAMPLE_PATH, MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL, \
+from tests.common import cleanUp, MODSECURITY_AUDIT_LOG_SAMPLE_PATH, MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL, \
     MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_FILE_PATH
 import io
-import os
 import sqlite3
 import unittest
 
@@ -21,11 +20,11 @@ class TestModsecurityAuditEntryDataSourceSQL(unittest.TestCase):
 
     def setUp(self):
         self._stream = io.open(MODSECURITY_AUDIT_LOG_SAMPLE_PATH, 'rt')
-        self._cleanUp()
+        cleanUp()
     
     def tearDown(self):
         self._stream.close()
-        self._cleanUp()
+        cleanUp()
 
     def testInsertModsecurityAuditEntryIterable(self):
         iterable = ModsecurityAuditLogParser().parseStream(self._stream)
@@ -41,6 +40,3 @@ class TestModsecurityAuditEntryDataSourceSQL(unittest.TestCase):
                           u"960017"),
                          cursor.execute(u"SELECT * FROM messages LIMIT 1").fetchone())
 
-    def _cleanUp(self):
-        if os.path.exists(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_FILE_PATH):
-            os.remove(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_FILE_PATH)

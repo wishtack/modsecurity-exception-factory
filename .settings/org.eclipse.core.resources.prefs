@@ -1,4 +1,4 @@
-#Fri Jan 04 16:11:55 CET 2013
+#Fri Jan 04 16:27:50 CET 2013
 eclipse.preferences.version=1
 encoding//modsecurity_exception_factory/modsecurity_audit_correlation_engine.py=utf-8
 encoding//modsecurity_exception_factory/modsecurity_audit_entry.py=utf-8
@@ -14,6 +14,7 @@ encoding//modsecurity_exception_factory/modsecurity_audit_log_parser/modsecurity
 encoding//modsecurity_exception_factory/modsecurity_audit_log_parser/modsecurity_audit_log_section_parser_factory.py=utf-8
 encoding//modsecurity_exception_factory/modsecurity_audit_log_parser/modsecurity_audit_log_section_parser_h.py=utf-8
 encoding//modsecurity_exception_factory/modsecurity_audit_log_parser/modsecurity_audit_log_section_parser_unknown.py=utf-8
-encoding//tests/data.py=utf-8
+encoding//tests/common.py=utf-8
+encoding//tests/test_modsecurity_audit_correlation_engine.py=utf-8
 encoding//tests/test_modsecurity_audit_entry_data_source_sql.py=utf-8
 encoding//tests/test_modsecurity_audit_log_parser.py=utf-8
