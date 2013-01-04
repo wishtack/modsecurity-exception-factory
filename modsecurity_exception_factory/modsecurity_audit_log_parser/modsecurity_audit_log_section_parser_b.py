@@ -19,6 +19,7 @@ new_contract('ModsecurityAuditLogParserState', ModsecurityAuditLogParserState)
 class ModsecurityAuditLogSectionParserB(IModsecurityAuditLogSectionParser):
     def __init__(self):
         self._regexHostHeader = re.compile(r"^Host: *(?P<hostName>[^:/]*)")
+        self._regexRequestFileName = re.compile(r"^(?P<requestFileName>[^;? ]*)")
 
     @contract
     def parseLine(self, state):
@@ -36,17 +37,19 @@ class ModsecurityAuditLogSectionParserB(IModsecurityAuditLogSectionParser):
         # otherwise.
         matchResult = self._regexHostHeader.match(strLine)
         if matchResult is not None:
+            # @todo warning otherwise.
             modsecurityAuditEntry.setHostName(matchResult.groupdict()['hostName'])
 
     def _parseRequestLine(self, modsecurityAuditEntry, strLine):
         partList = strLine.split(u" ")
         if len(partList) < 3:
-            # LOG WARNING:
+            # @todo warning
             return
         
         uri = partList[1]
         
         # Retrieve request file name from uri.
-        requestFileName = uri.split(u"?")[0].strip()
-        
-        modsecurityAuditEntry.setRequestFileName(requestFileName)
+        matchResult = self._regexRequestFileName.match(uri)
+        if matchResult is not None:
+            # @todo warning otherwise.
+            modsecurityAuditEntry.setRequestFileName(matchResult.groupdict()['requestFileName'])

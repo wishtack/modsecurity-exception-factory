@@ -3,6 +3,7 @@
 	<name>modsecurity-exception-factory</name>
 	<comment></comment>
 	<projects>
+		<project>pysynthetic</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -8,15 +8,14 @@
 #
 
 from modsecurity_exception_factory.modsecurity_audit_log_parser import ModsecurityAuditLogParser
+from tests.data import MODSECURITY_AUDIT_LOG_SAMPLE_PATH
 import io
 import unittest
 
 class TestModsecurityAuditLogParser(unittest.TestCase):
 
-    _MOD_SECURITY_AUDIT_LOG_PATH = u"data/modsec_audit.log"
-
     def setUp(self):
-        self._stream = io.open(self._MOD_SECURITY_AUDIT_LOG_PATH, 'rt')
+        self._stream = io.open(MODSECURITY_AUDIT_LOG_SAMPLE_PATH, 'rt')
     
     def tearDown(self):
         self._stream.close()
