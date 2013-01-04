@@ -15,12 +15,17 @@ class TestModsecurityAuditLogParser(unittest.TestCase):
 
     _MOD_SECURITY_AUDIT_LOG_PATH = u"data/modsec_audit.log"
 
+    def setUp(self):
+        self._stream = io.open(self._MOD_SECURITY_AUDIT_LOG_PATH, 'rt')
+    
+    def tearDown(self):
+        self._stream.close()
+
     def testModsecurityAuditLogParser(self):
-        stream = io.open(self._MOD_SECURITY_AUDIT_LOG_PATH, 'rt')
         parser = ModsecurityAuditLogParser()
         
         # Make a list out of generator.
-        entryList = list(parser.parseStream(stream))
+        entryList = list(parser.parseStream(self._stream))
         
         # Checking entries count.
         self.assertEqual(236, len(entryList))
