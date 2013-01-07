@@ -16,8 +16,11 @@ from sqlalchemy.engine import create_engine
 from sqlalchemy.orm.session import sessionmaker
 
 new_contract('ModsecurityAuditEntry', ModsecurityAuditEntry)
+new_contract('SQLModsecurityAuditEntryMessage', SQLModsecurityAuditEntryMessage)
 
 class ModsecurityAuditEntryDataSourceSQL:
+    _DATA_INSERTION_BUFFER_SIZE = 100
+    
     @contract
     def __init__(self, dataBaseUrl):
         """
@@ -31,19 +34,22 @@ class ModsecurityAuditEntryDataSourceSQL:
     def insertModsecurityAuditEntryIterable(self, modsecurityAuditEntryIterable):
         self._initializeDataBase()
         
+        sqlModsecurityAuditEntryMessageBuffer = []
+        
         for modsecurityAuditEntry in modsecurityAuditEntryIterable:
             hostName = modsecurityAuditEntry.hostName()
             requestFileName = modsecurityAuditEntry.requestFileName()            
             for message in modsecurityAuditEntry.messageList():                
-                # Insert message.
-                session = self._sessionMaker()
                 sqlMessage = SQLModsecurityAuditEntryMessage()
                 sqlMessage.hostName = hostName
                 sqlMessage.requestFileName = requestFileName
                 sqlMessage.payloadContainer = message.payloadContainer()
                 sqlMessage.ruleId = message.ruleId()
-                session.add(sqlMessage)
-                session.commit()
+                
+                # Insert message.
+                self._insertModsecurityAuditEntryMessage(sqlModsecurityAuditEntryMessageBuffer, sqlMessage)
+        
+        self._flushModsecurityAuditEntryMessageBuffer(sqlModsecurityAuditEntryMessageBuffer)
 
     def _initializeDataBase(self):
         if self._initialized:
@@ -51,3 +57,27 @@ class ModsecurityAuditEntryDataSourceSQL:
 
         SQLBase.metadata.create_all(self._sqlEngine)
         self._initialized = True
+
+    @contract
+    def _insertModsecurityAuditEntryMessage(self, sqlModsecurityAuditEntryMessageBuffer, sqlModsecurityAuditEntryMessage):
+        """
+    :type sqlModsecurityAuditEntryMessageBuffer: list(SQLModsecurityAuditEntryMessage)
+    :type sqlModsecurityAuditEntryMessage: SQLModsecurityAuditEntryMessage
+"""
+        if len(sqlModsecurityAuditEntryMessageBuffer) >= self._DATA_INSERTION_BUFFER_SIZE:
+            self._flushModsecurityAuditEntryMessageBuffer(sqlModsecurityAuditEntryMessageBuffer)
+        
+        sqlModsecurityAuditEntryMessageBuffer.append(sqlModsecurityAuditEntryMessage)
+
+    @contract
+    def _flushModsecurityAuditEntryMessageBuffer(self, sqlModsecurityAuditEntryMessageBuffer):
+        """
+    :type sqlModsecurityAuditEntryMessageBuffer: list(SQLModsecurityAuditEntryMessage)
+"""
+        session = self._sessionMaker()
+        try:
+            session.add_all(sqlModsecurityAuditEntryMessageBuffer)
+            session.commit()
+            del sqlModsecurityAuditEntryMessageBuffer[:]
+        finally:
+            session.close()
