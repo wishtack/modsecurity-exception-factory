@@ -23,13 +23,13 @@ class TestModsecurityAuditCorrelationEngine(unittest.TestCase):
     
     def tearDown(self):
         self._stream.close()
-#        cleanUp()
+        cleanUp()
 
     def testCorrelate(self):
         # Fillup database.
         iterable = ModsecurityAuditLogParser().parseStream(self._stream)
         dataSource = ModsecurityAuditEntryDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
-        dataSource.insertModsecurityAuditEntryIterable(list(iterable)[:10])
+        dataSource.insertModsecurityAuditEntryIterable(iterable)
         
         ModsecurityAuditCorrelationEngine().correlate(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL, None)
         

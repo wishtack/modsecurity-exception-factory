@@ -14,6 +14,7 @@ from modsecurity_exception_factory.modsecurity_audit_entry_data_source.sql_modse
     SQLModsecurityAuditEntryMessage
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm.session import sessionmaker
+from sqlalchemy.sql.expression import distinct
 
 new_contract('ModsecurityAuditEntry', ModsecurityAuditEntry)
 
@@ -26,6 +27,7 @@ class ModsecurityAuditEntryDataSourceSQL:
         self._dataBaseUrl = dataBaseUrl
         self._sqlEngine = create_engine(dataBaseUrl)
         self._sessionMaker = sessionmaker(bind = self._sqlEngine)
+        self._columnNameList = None
         self._initialized = False
 
     def insertModsecurityAuditEntryIterable(self, modsecurityAuditEntryIterable):
@@ -37,13 +39,31 @@ class ModsecurityAuditEntryDataSourceSQL:
             for message in modsecurityAuditEntry.messageList():                
                 # Insert message.
                 session = self._sessionMaker()
-                sqlMessage = SQLModsecurityAuditEntryMessage()
-                sqlMessage.hostName = hostName
-                sqlMessage.requestFileName = requestFileName
-                sqlMessage.payloadContainer = message.payloadContainer()
-                sqlMessage.ruleId = message.ruleId()
-                session.add(sqlMessage)
-                session.commit()
+                try:
+                    sqlMessage = SQLModsecurityAuditEntryMessage()
+                    sqlMessage.hostName = hostName
+                    sqlMessage.requestFileName = requestFileName
+                    sqlMessage.payloadContainer = message.payloadContainer()
+                    sqlMessage.ruleId = message.ruleId()
+                    session.add(sqlMessage)
+                    session.commit()
+                finally:
+                    session.close()
+
+    @contract
+    def variableValueIterable(self, columnName):
+        """
+    :type columnName: str
+"""
+        if not self._columnExists(columnName):
+            return
+        
+        try:
+            session = self._sessionMaker()
+            for row in session.query(distinct(getattr(SQLModsecurityAuditEntryMessage, columnName))):
+                yield row[0]
+        finally:
+            session.close()
 
     def _initializeDataBase(self):
         if self._initialized:
@@ -51,3 +71,6 @@ class ModsecurityAuditEntryDataSourceSQL:
 
         SQLBase.metadata.create_all(self._sqlEngine)
         self._initialized = True
+
+    def _columnExists(self, columnName):
+        return SQLModsecurityAuditEntryMessage.__table__.columns.has_key(columnName)

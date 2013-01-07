@@ -9,15 +9,20 @@
 
 from Orange.data.sql import SQLReader, __PostgresQuirkFix as PostgresQuirkFix
 from contracts import contract
+from modsecurity_exception_factory.modsecurity_audit_entry_data_source.modsecurity_audit_entry_data_source_sql import \
+    ModsecurityAuditEntryDataSourceSQL
 from sqlalchemy.engine.url import make_url
 import Orange.data
 import Orange.feature
+import itertools
 import orange
 import orngAssoc
 import sqlite3
 
 class ModsecurityAuditCorrelationEngine:
-
+    
+    _VARIABLE_FALSE_POSITIVE_NAME = 'falsePositive'
+    _VARIABLE_FALSE_POSITIVE_TRUE = 'True'
     
     @contract
     def correlate(self, dataBaseUrl, modsecurityAuditCorrelationDataSource):
@@ -25,23 +30,15 @@ class ModsecurityAuditCorrelationEngine:
     :type dataBaseUrl: unicode
 """
 
-        variableNameList = ['hostName', 'requestFileName', 'payloadContainer', 'ruleId', 'falsePositive']
-        variableList = [Orange.feature.Discrete(variableName) for variableName in variableNameList]
-        domain = Orange.data.Domain(variableList,
-                       class_var = 'falsePositive')
-
-        reader = self._makeReader(dataBaseUrl)
-        reader.execute(u"SELECT hostName, requestFileName, payloadContainer, ruleId, 'True' AS falsePositive FROM messages",
-                       domain = domain)
-        
-        data = reader.data()
+        variableNameList = ['hostName', 'requestFileName', 'payloadContainer', 'ruleId']
+        data = self._makeData(dataBaseUrl, variableNameList)
         
         ruleSubsetList = []
         
-        for leftAttributeCount in range(len(data.domain),0,-1):
+        for leftAttributeCount in range(len(data.domain), 0, -1):
             support = 0
             if len(data) > 0:
-                support = 27.0 / len(data)
+                support = 10.0 / len(data)
             
             rules = orange.AssociationRulesInducer(data, support = support, classification_rules = True)
             rules = rules.filter(lambda rule: rule.n_left == leftAttributeCount)
@@ -73,3 +70,43 @@ class ModsecurityAuditCorrelationEngine:
             reader.connect(dataBaseUrlString)
         
         return reader
+
+    def _makeDiscreteVariable(self, dataSource, variableName, additionalValueList = []):
+        """
+    :type dataSource: ModsecurityAuditEntryDataSourceSQL
+    :type variableName: str
+    :type additionalValueList: list(unicode)
+"""
+        # Creating data source.
+        variable = Orange.feature.Discrete(variableName)
+        for value in itertools.chain(dataSource.variableValueIterable(variableName), additionalValueList):
+            variable.add_value(value.encode('utf-8'))      
+        return variable 
+
+    @contract
+    def _makeData(self, dataBaseUrl, variableNameList):
+        """
+    :type dataBaseUrl: unicode
+    :type variableNameList: list(str)
+"""
+        # Creating data source.
+        dataSource = ModsecurityAuditEntryDataSourceSQL(dataBaseUrl)
+        
+        # Making variables out of data source content.
+        variableList = []
+        for variableName in variableNameList:
+            variableList.append(self._makeDiscreteVariable(dataSource, variableName))
+            
+        # We add the 'falsePositive' variable.
+        variableList.append(self._makeDiscreteVariable(dataSource,
+                                                       self._VARIABLE_FALSE_POSITIVE_NAME,
+                                                       [self._VARIABLE_FALSE_POSITIVE_TRUE]))
+        
+        # Creating the domain.
+        domain = Orange.data.Domain(variableList)
+        
+        reader = self._makeReader(dataBaseUrl)
+        reader.execute(u"SELECT %s, 'True' AS falsePositive FROM messages" % u", ".join(variableNameList),
+                       domain = domain)
+        
+        return reader.data()
