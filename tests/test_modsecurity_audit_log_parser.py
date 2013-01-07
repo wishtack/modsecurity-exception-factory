@@ -8,7 +8,7 @@
 #
 
 from modsecurity_exception_factory.modsecurity_audit_log_parser import ModsecurityAuditLogParser
-from tests.data import MODSECURITY_AUDIT_LOG_SAMPLE_PATH
+from tests.common import MODSECURITY_AUDIT_LOG_SAMPLE_PATH
 import io
 import unittest
 

@@ -17,8 +17,11 @@ from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.sql.expression import distinct
 
 new_contract('ModsecurityAuditEntry', ModsecurityAuditEntry)
+new_contract('SQLModsecurityAuditEntryMessage', SQLModsecurityAuditEntryMessage)
 
 class ModsecurityAuditEntryDataSourceSQL:
+    _DATA_INSERTION_BUFFER_SIZE = 100
+    
     @contract
     def __init__(self, dataBaseUrl):
         """
@@ -33,22 +36,22 @@ class ModsecurityAuditEntryDataSourceSQL:
     def insertModsecurityAuditEntryIterable(self, modsecurityAuditEntryIterable):
         self._initializeDataBase()
         
+        sqlModsecurityAuditEntryMessageBuffer = []
+        
         for modsecurityAuditEntry in modsecurityAuditEntryIterable:
             hostName = modsecurityAuditEntry.hostName()
-            requestFileName = modsecurityAuditEntry.requestFileName()            
-            for message in modsecurityAuditEntry.messageList():                
+            requestFileName = modsecurityAuditEntry.requestFileName()
+            for message in modsecurityAuditEntry.messageList():
+                sqlMessage = SQLModsecurityAuditEntryMessage()
+                sqlMessage.hostName = hostName
+                sqlMessage.requestFileName = requestFileName
+                sqlMessage.payloadContainer = message.payloadContainer()
+                sqlMessage.ruleId = message.ruleId()
+                
                 # Insert message.
-                session = self._sessionMaker()
-                try:
-                    sqlMessage = SQLModsecurityAuditEntryMessage()
-                    sqlMessage.hostName = hostName
-                    sqlMessage.requestFileName = requestFileName
-                    sqlMessage.payloadContainer = message.payloadContainer()
-                    sqlMessage.ruleId = message.ruleId()
-                    session.add(sqlMessage)
-                    session.commit()
-                finally:
-                    session.close()
+                self._insertModsecurityAuditEntryMessage(sqlModsecurityAuditEntryMessageBuffer, sqlMessage)
+        
+        self._flushModsecurityAuditEntryMessageBuffer(sqlModsecurityAuditEntryMessageBuffer)
 
     @contract
     def variableValueIterable(self, columnName):
@@ -74,3 +77,27 @@ class ModsecurityAuditEntryDataSourceSQL:
 
     def _columnExists(self, columnName):
         return SQLModsecurityAuditEntryMessage.__table__.columns.has_key(columnName)
+
+    @contract
+    def _insertModsecurityAuditEntryMessage(self, sqlModsecurityAuditEntryMessageBuffer, sqlModsecurityAuditEntryMessage):
+        """
+    :type sqlModsecurityAuditEntryMessageBuffer: list(SQLModsecurityAuditEntryMessage)
+    :type sqlModsecurityAuditEntryMessage: SQLModsecurityAuditEntryMessage
+"""
+        if len(sqlModsecurityAuditEntryMessageBuffer) >= self._DATA_INSERTION_BUFFER_SIZE:
+            self._flushModsecurityAuditEntryMessageBuffer(sqlModsecurityAuditEntryMessageBuffer)
+        
+        sqlModsecurityAuditEntryMessageBuffer.append(sqlModsecurityAuditEntryMessage)
+
+    @contract
+    def _flushModsecurityAuditEntryMessageBuffer(self, sqlModsecurityAuditEntryMessageBuffer):
+        """
+    :type sqlModsecurityAuditEntryMessageBuffer: list(SQLModsecurityAuditEntryMessage)
+"""
+        session = self._sessionMaker()
+        try:
+            session.add_all(sqlModsecurityAuditEntryMessageBuffer)
+            session.commit()
+            del sqlModsecurityAuditEntryMessageBuffer[:]
+        finally:
+            session.close()
