@@ -7,8 +7,8 @@
 # $Id: $
 #
 
-from modsecurity_exception_factory.modsecurity_audit_entry_data_source.modsecurity_audit_entry_data_source_sql import \
-    ModsecurityAuditEntryDataSourceSQL
+from modsecurity_exception_factory.modsecurity_audit_data_source.modsecurity_audit_data_source_sql import \
+    ModsecurityAuditDataSourceSQL
 from modsecurity_exception_factory.modsecurity_audit_log_parser.modsecurity_audit_log_parser import \
     ModsecurityAuditLogParser
 from tests.common import cleanUp, MODSECURITY_AUDIT_LOG_SAMPLE_PATH, MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL, \
@@ -17,7 +17,7 @@ import io
 import sqlite3
 import unittest
 
-class TestModsecurityAuditEntryDataSourceSQL(unittest.TestCase):
+class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
 
     def setUp(self):
         self._stream = io.open(MODSECURITY_AUDIT_LOG_SAMPLE_PATH, 'rt')
@@ -42,7 +42,7 @@ class TestModsecurityAuditEntryDataSourceSQL(unittest.TestCase):
     def testVariableValueIterable(self):
         self._fillUpDataSource()
         
-        dataSource = ModsecurityAuditEntryDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
+        dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
         
 
         
@@ -226,5 +226,5 @@ class TestModsecurityAuditEntryDataSourceSQL(unittest.TestCase):
 
     def _fillUpDataSource(self):        
         iterable = ModsecurityAuditLogParser().parseStream(self._stream)
-        dataSource = ModsecurityAuditEntryDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
+        dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
         dataSource.insertModsecurityAuditEntryIterable(iterable)        

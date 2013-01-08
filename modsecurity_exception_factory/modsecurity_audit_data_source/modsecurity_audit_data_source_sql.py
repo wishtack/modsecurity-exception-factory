@@ -7,19 +7,24 @@
 # $Id: $
 #
 
+from Orange.data.sql import SQLReader, __PostgresQuirkFix as PostgresQuirkFix
 from contracts import contract, new_contract
-from modsecurity_exception_factory.modsecurity_audit_entry import ModsecurityAuditEntry
-from modsecurity_exception_factory.modsecurity_audit_entry_data_source.sql_base import SQLBase
-from modsecurity_exception_factory.modsecurity_audit_entry_data_source.sql_modsecurity_audit_entry_message import \
+from modsecurity_exception_factory.modsecurity_audit_data_source.i_modsecurity_audit_data_source import \
+    IModsecurityAuditDataSource
+from modsecurity_exception_factory.modsecurity_audit_data_source.sql_base import SQLBase
+from modsecurity_exception_factory.modsecurity_audit_data_source.sql_modsecurity_audit_entry_message import \
     SQLModsecurityAuditEntryMessage
+from modsecurity_exception_factory.modsecurity_audit_entry import ModsecurityAuditEntry
 from sqlalchemy.engine import create_engine
+from sqlalchemy.engine.url import make_url
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.sql.expression import distinct
+import sqlite3
 
 new_contract('ModsecurityAuditEntry', ModsecurityAuditEntry)
 new_contract('SQLModsecurityAuditEntryMessage', SQLModsecurityAuditEntryMessage)
 
-class ModsecurityAuditEntryDataSourceSQL:
+class ModsecurityAuditDataSourceSQL(IModsecurityAuditDataSource):
     _DATA_INSERTION_BUFFER_SIZE = 100
     
     @contract
@@ -68,6 +73,20 @@ class ModsecurityAuditEntryDataSourceSQL:
         finally:
             session.close()
 
+    def orangeDataReader(self):        
+        reader = SQLReader()
+        
+        # @hack SQLReader's connect method doesn't parse sqlite urls correctly.
+        # It only handle file names instead of pathes (it should concatenate "host" and "path".        
+        url = make_url(self._dataBaseUrl)
+        if url.drivername == u"sqlite":
+            reader.conn = sqlite3.connect(url.database)
+            reader.quirks = PostgresQuirkFix(sqlite3)
+        else:
+            reader.connect(self._dataBaseUrl)
+        
+        return reader
+
     def _initializeDataBase(self):
         if self._initialized:
             return
@@ -84,10 +103,10 @@ class ModsecurityAuditEntryDataSourceSQL:
     :type sqlModsecurityAuditEntryMessageBuffer: list(SQLModsecurityAuditEntryMessage)
     :type sqlModsecurityAuditEntryMessage: SQLModsecurityAuditEntryMessage
 """
+        sqlModsecurityAuditEntryMessageBuffer.append(sqlModsecurityAuditEntryMessage)
+
         if len(sqlModsecurityAuditEntryMessageBuffer) >= self._DATA_INSERTION_BUFFER_SIZE:
             self._flushModsecurityAuditEntryMessageBuffer(sqlModsecurityAuditEntryMessageBuffer)
-        
-        sqlModsecurityAuditEntryMessageBuffer.append(sqlModsecurityAuditEntryMessage)
 
     @contract
     def _flushModsecurityAuditEntryMessageBuffer(self, sqlModsecurityAuditEntryMessageBuffer):

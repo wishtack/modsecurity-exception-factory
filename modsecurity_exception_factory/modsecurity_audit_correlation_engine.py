@@ -7,106 +7,123 @@
 # $Id: $
 #
 
-from Orange.data.sql import SQLReader, __PostgresQuirkFix as PostgresQuirkFix
 from contracts import contract
-from modsecurity_exception_factory.modsecurity_audit_entry_data_source.modsecurity_audit_entry_data_source_sql import \
-    ModsecurityAuditEntryDataSourceSQL
-from sqlalchemy.engine.url import make_url
-import Orange.data
-import Orange.feature
+from contracts.main import new_contract
+from modsecurity_exception_factory.modsecurity_audit_data_source.i_modsecurity_audit_data_source import \
+    IModsecurityAuditDataSource
+from modsecurity_exception_factory.orange_data_table_factory import OrangeDataTableFactory
+from synthetic.decorators import synthesizeMember, synthesizeConstructor
+import datetime
 import itertools
 import orange
 import orngAssoc
-import sqlite3
+
+new_contract('IModsecurityAuditDataSource', IModsecurityAuditDataSource)
+
+@synthesizeMember('childrenResultList')
+@synthesizeMember('attributeDict')
+@synthesizeConstructor()
+class Result:
+    def __init__(self):
+        self._attributeDict = {}
+        self._childrenList = []
+    
+    def addChild(self, result):
+        self._childrenList.append(result)
+    
+    def __str__(self):
+        print(self._attributeDict)
+        for child in self._childrenList:
+            print("\t%s", child)
 
 class ModsecurityAuditCorrelationEngine:
     
-    _VARIABLE_FALSE_POSITIVE_NAME = 'falsePositive'
-    _VARIABLE_FALSE_POSITIVE_TRUE = 'True'
+    _EMPTY_ATTRIBUTE_VALUE = '~'
     
     @contract
-    def correlate(self, dataBaseUrl, modsecurityAuditCorrelationDataSource):
+    def correlate(self, dataSource, minimumOccurrenceCountThreshold = 0):
         """
-    :type dataBaseUrl: unicode
+    :type dataSource: IModsecurityAuditDataSource
+    :type minimumOccurrenceCountThreshold: int
 """
 
         variableNameList = ['hostName', 'requestFileName', 'payloadContainer', 'ruleId']
-        data = self._makeData(dataBaseUrl, variableNameList)
         
-        ruleSubsetList = []
+        print("%s data loaded" % datetime.datetime.now())
+        data = OrangeDataTableFactory().data(dataSource, variableNameList)
+        if len(data) == 0:
+            return
         
-        for leftAttributeCount in range(len(data.domain), 0, -1):
-            support = 0
-            if len(data) > 0:
-                support = 10.0 / len(data)
+        support = float(minimumOccurrenceCountThreshold) / len(data)
+
+        print("%s association" % datetime.datetime.now())
+        resultList = self._induce(data, variableNameList, support)
+        for result in resultList:
+            print(result)
+        
+#        ruleIterable = orange.AssociationRulesInducer(data, support = support, classification_rules = True)
+#        
+#        orngAssoc.sort(ruleIterable, ['support', 'n_left'])
+#        
+##        ruleIterableList = []
+##        ruleIterableList.append(ruleIterable.filter(lambda rule: rule.n_left != len(variableNameList)))
+##        ruleIterableList.append(ruleIterable.filter(lambda rule: rule.n_left == len(variableNameList)))
+#                
+#        for rule in ruleIterable:
+#            dataSet = set()
+#            for item in self._matchingData(data, rule):
+#                significantVariableNameList = filter(lambda v: v not in self._ruleToAttributeNameList(data.domain, rule),
+#                                                     variableNameList)
+#                dataSet.add(tuple([(variableName, item[variableName].value) for variableName in significantVariableNameList]))
+#
+#            data = self._nonMatchingData(data, rule)
+#
+#            if len(dataSet) > 0:
+#                print("%d: %s" % (len(dataSet), self._ruleToAttributeDict(data.domain, rule)))
+#                for item in dataSet:
+#                    print(dict(item))
+
+    def _induce(self, data, variableNameList, support = 0):
+        resultList = []
+        
+        ruleIterable = orange.AssociationRulesInducer(data, support = support, classification_rules = True)
+        orngAssoc.sort(ruleIterable, ['support', 'n_left'])
+        
+        for rule in ruleIterable:
+            subsetVariableNameList = filter(lambda v: v not in self._ruleToAttributeNameList(data.domain, rule), variableNameList)
+            childrenResultList = []
+            if len(subsetVariableNameList) > 0:
+                childrenResultList = self._induce(self._matchingData(data, rule), subsetVariableNameList)
+
+            result = Result(attributeDict = self._ruleToAttributeDict(data.domain, rule),
+                            childrenResultList = childrenResultList)
+            resultList.append(result)
             
-            rules = orange.AssociationRulesInducer(data, support = support, classification_rules = True)
-            rules = rules.filter(lambda rule: rule.n_left == leftAttributeCount)
-            ruleSubsetList.append(rules)
-            for rule in rules:
-                attributeDict = {}
-                for attribute in data.domain:
-                    attributeName = attribute.name
-                    attributeValue = rule.left[attribute].value
-                    if attributeValue != '~':
-                        attributeDict[attributeName] = attributeValue
-                data = data.filter_ref(attributeDict, negate = True)
-        
-        parameterList = ['n_left', 'support']
-        for ruleSubset in ruleSubsetList:
-            orngAssoc.sort(ruleSubset, parameterList)
-            orngAssoc.printRules(ruleSubset, parameterList)
+            data = self._nonMatchingData(data, rule)
+        return resultList
 
-    def _makeReader(self, dataBaseUrlString):
-        reader = SQLReader()
-        
-        # @hack SQLReader's connect method doesn't parse sqlite urls correctly.
-        # It only handle file names instead of pathes (it should concatenate "host" and "path".        
-        url = make_url(dataBaseUrlString)
-        if url.drivername == u"sqlite":
-            reader.conn = sqlite3.connect(url.database)
-            reader.quirks = PostgresQuirkFix(sqlite3)
-        else:
-            reader.connect(dataBaseUrlString)
-        
-        return reader
+    def _ruleToAttributeDict(self, domain, rule):
+        attributeDict = {}
+        for attribute in domain:
+            attributeName = attribute.name
+            attributeValue = rule.left[attribute].value
+            if attributeValue != self._EMPTY_ATTRIBUTE_VALUE:
+                attributeDict[attributeName] = attributeValue
+        return attributeDict
 
-    def _makeDiscreteVariable(self, dataSource, variableName, additionalValueList = []):
-        """
-    :type dataSource: ModsecurityAuditEntryDataSourceSQL
-    :type variableName: str
-    :type additionalValueList: list(unicode)
-"""
-        # Creating data source.
-        variable = Orange.feature.Discrete(variableName)
-        for value in itertools.chain(dataSource.variableValueIterable(variableName), additionalValueList):
-            variable.add_value(value.encode('utf-8'))      
-        return variable 
+    def _ruleToAttributeNameList(self, domain, rule):
+        return list(self._ruleToAttributeDict(domain, rule).keys())
+    
+    def _ruleToAttributeSet(self, domain, rule):
+        attributeDict = self._ruleToAttributeDict(domain, rule)
+        return set([(k, v) for k, v in attributeDict.items()])
 
-    @contract
-    def _makeData(self, dataBaseUrl, variableNameList):
-        """
-    :type dataBaseUrl: unicode
-    :type variableNameList: list(str)
-"""
-        # Creating data source.
-        dataSource = ModsecurityAuditEntryDataSourceSQL(dataBaseUrl)
-        
-        # Making variables out of data source content.
-        variableList = []
-        for variableName in variableNameList:
-            variableList.append(self._makeDiscreteVariable(dataSource, variableName))
-            
-        # We add the 'falsePositive' variable.
-        variableList.append(self._makeDiscreteVariable(dataSource,
-                                                       self._VARIABLE_FALSE_POSITIVE_NAME,
-                                                       [self._VARIABLE_FALSE_POSITIVE_TRUE]))
-        
-        # Creating the domain.
-        domain = Orange.data.Domain(variableList)
-        
-        reader = self._makeReader(dataBaseUrl)
-        reader.execute(u"SELECT %s, 'True' AS falsePositive FROM messages" % u", ".join(variableNameList),
-                       domain = domain)
-        
-        return reader.data()
+    def _matchingData(self, data, rule):
+        return self._filterData(data, rule)
+    
+    def _nonMatchingData(self, data, rule):
+        return self._filterData(data, rule, True)
+    
+    def _filterData(self, data, rule, negate = False):
+        attributeDict = self._ruleToAttributeDict(data.domain, rule)
+        return data.filter_ref(attributeDict, negate = negate)
