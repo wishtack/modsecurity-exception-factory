@@ -146,23 +146,23 @@ The dict keys are variables' names and the values are set objects containing var
         for _, group in itertools.groupby(correlationDictList, key = keyListAsKey):
             # @todo merge multiple attributes.
             mergedCorrelationDict = None
-            mergedAttribute = None
+            mergedAttributeSet = None
             for correlationDict in group:
                 if mergedCorrelationDict is None:
                     mergedCorrelationDict = copy.deepcopy(correlationDict)
                     continue
 
                 # Compare currently merged correlation and the new one.
-                differentAttributeList = self._differentAttributeList(mergedCorrelationDict, correlationDict)
-                if len(differentAttributeList) == 0:
+                differentAttributeSet = self._differentAttributeSet(mergedCorrelationDict, correlationDict)
+                if len(differentAttributeSet) == 0:
                     raise ImpossibleError()
 
                 # Only one different attribute, let's merge it if the attribute ha
-                if len(differentAttributeList) == 1 \
-                    and (mergedAttribute is None \
-                         or differentAttributeList[0] == mergedAttribute):
+                if len(differentAttributeSet) == 1 \
+                    and (mergedAttributeSet is None \
+                         or differentAttributeSet == mergedAttributeSet):
                     mergedCorrelationDict = self._unionCorrelationDict([mergedCorrelationDict, correlationDict])
-                    mergedAttribute = differentAttributeList[0]
+                    mergedAttributeSet = differentAttributeSet
 
                 else:
                     yield mergedCorrelationDict
@@ -171,15 +171,15 @@ The dict keys are variables' names and the values are set objects containing var
             if mergedCorrelationDict is not None:
                 yield mergedCorrelationDict
 
-    def _differentAttributeList(self, correlationDictFirst, correlationDictSecond):
+    def _differentAttributeSet(self, correlationDictFirst, correlationDictSecond):
         if set(correlationDictFirst.keys()) != set(correlationDictSecond.keys()):
             raise ImpossibleError()
         
-        differentAttributeList = []
+        differentAttributeSet = set()
         for name in correlationDictFirst.keys():
             if correlationDictFirst[name] != correlationDictSecond[name]:
-                differentAttributeList.append(name)
-        return differentAttributeList            
+                differentAttributeSet.add(name)
+        return differentAttributeSet            
 
     def _ruleToVariableDict(self, domain, rule):
         attributeDict = {}
