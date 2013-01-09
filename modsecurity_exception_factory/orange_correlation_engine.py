@@ -185,19 +185,19 @@ The dict keys are variables' names and the values are set objects containing var
             raise ImpossibleError()
 
         if len(differentAttributeList) == 1:
-            mergeableAttributeList = differentAttributeList
+            mergeAttributeList = differentAttributeList
         else:
-            mergeableAttributeList = list(filter(lambda attribute: \
+            mergeAttributeList = list(filter(lambda attribute: \
                                                  len(correlationDictFirst[attribute]) \
                                                  == len(correlationDictSecond[attribute]) \
                                                  == 1,
                                                  self._correlationDictSimpleKeyIterable(differentAttributeList)))
+            mergeAttributeList.sort()
 
         # When 'currentMergeAttributeList' is None, it means that there's no merging context yet...
-        # ... and 'mergeableAttributeList == currentMergeAttributeList' means that everything is fine, we can merge.
-        if currentMergeAttributeList is None or (mergeableAttributeList == currentMergeAttributeList):
-            mergeableAttributeList.sort()
-            return mergeableAttributeList
+        # ... and 'mergeAttributeList == currentMergeAttributeList' means that everything is fine, we are still in the same context, we can merge.
+        if currentMergeAttributeList is None or (mergeAttributeList == currentMergeAttributeList):
+            return mergeAttributeList
         else:
             return None
     
@@ -210,14 +210,10 @@ The dict keys are variables' names and the values are set objects containing var
 
         # First, copy the first correlation dict and only keep common attributes...
         mergedCorrelationDict = copy.deepcopy(correlationDictFirst)
-#        for attribute in mergeAttributeList:
-#            if attribute in mergedCorrelationDict:
-#                del mergedCorrelationDict[attribute]
 
         # ... we make the merged attribute value list if it does not exist yet...
-        if mergedAttribute not in mergedCorrelationDict:
-            mergedCorrelationDict[mergedAttribute] = set()
-        mergedAttributeValueSet = mergedCorrelationDict[mergedAttribute]
+        mergedAttributeValueSet = mergedCorrelationDict.get(mergedAttribute, set())
+        mergedCorrelationDict[mergedAttribute] = mergedAttributeValueSet
          
         # ... if there's only one attribute to merge, then copy values...
         if len(mergeAttributeList) == 1:
@@ -245,6 +241,7 @@ The dict keys are variables' names and the values are set objects containing var
         for key in self._correlationDictSimpleKeyIterable(correlationDictFirst):
             if correlationDictFirst[key] != correlationDictSecond[key]:
                 differentAttributeSet.add(key)
+
         return list(differentAttributeSet)
 
     def _correlationDictSimpleKeyIterable(self, correlationDict):
