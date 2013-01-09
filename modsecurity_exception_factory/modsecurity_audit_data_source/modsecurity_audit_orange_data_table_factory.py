@@ -16,13 +16,13 @@ import itertools
 
 new_contract('IModsecurityAuditDataSource', IModsecurityAuditDataSource)
 
-class OrangeDataTableFactory:
+class ModsecurityAuditOrangeDataTableFactory:
     
     _VARIABLE_FALSE_POSITIVE_NAME = 'falsePositive'
     _VARIABLE_FALSE_POSITIVE_TRUE = u"True"
 
     @contract
-    def data(self, dataSource, variableNameList):
+    def entryMessageData(self, dataSource, variableNameList):
         """Makes data table for Orange data-mining library.
     :type dataSource: IModsecurityAuditDataSource
     :type variableNameList: list(str)

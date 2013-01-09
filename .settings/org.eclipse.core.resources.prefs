@@ -1,8 +1,9 @@
-#Tue Jan 08 15:07:57 CET 2013
+#Wed Jan 09 12:36:39 CET 2013
 eclipse.preferences.version=1
-encoding//modsecurity_exception_factory/modsecurity_audit_correlation_engine.py=utf-8
+encoding//modsecurity_exception_factory/modsecurity_audit_correlator.py=utf-8
 encoding//modsecurity_exception_factory/modsecurity_audit_data_source/i_modsecurity_audit_data_source.py=utf-8
 encoding//modsecurity_exception_factory/modsecurity_audit_data_source/modsecurity_audit_data_source_sql.py=utf-8
+encoding//modsecurity_exception_factory/modsecurity_audit_data_source/modsecurity_audit_orange_data_table_factory.py=utf-8
 encoding//modsecurity_exception_factory/modsecurity_audit_data_source/sql_base.py=utf-8
 encoding//modsecurity_exception_factory/modsecurity_audit_data_source/sql_modsecurity_audit_entry_message.py=utf-8
 encoding//modsecurity_exception_factory/modsecurity_audit_entry.py=utf-8
@@ -16,7 +17,7 @@ encoding//modsecurity_exception_factory/modsecurity_audit_log_parser/modsecurity
 encoding//modsecurity_exception_factory/modsecurity_audit_log_parser/modsecurity_audit_log_section_parser_h.py=utf-8
 encoding//modsecurity_exception_factory/modsecurity_audit_log_parser/modsecurity_audit_log_section_parser_unknown.py=utf-8
 encoding//modsecurity_exception_factory/modsecurity_exception.py=utf-8
-encoding//modsecurity_exception_factory/orange_data_table_factory.py=utf-8
+encoding//modsecurity_exception_factory/orange_correlation_engine.py=utf-8
 encoding//tests/common.py=utf-8
 encoding//tests/test_modsecurity_audit_correlation_engine.py=utf-8
 encoding//tests/test_modsecurity_audit_data_source_sql.py=utf-8
