@@ -21,7 +21,7 @@ class TestModsecurityAuditCorrelationEngine(unittest.TestCase):
 
     _EXPECTED_CORRELATION_LIST = \
 [{'hostName': set(['1.1.1.1']),
- 'payloadContainer': set(['TX:inbound_anomaly_score']),
+ 'payloadContainer': set(['REQUEST_HEADERS:Host']),
  'requestFileName': set(['/agilefant/ajax/iterationData.action',
                          '/agilefant/ajax/myAssignmentsMenuData.action',
                          '/agilefant/dailyWork.action',
@@ -182,7 +182,7 @@ class TestModsecurityAuditCorrelationEngine(unittest.TestCase):
                          '/agilefant/static/js/utils/menuTimer.js',
                          '/agilefant/static/js/utils/quickSearch.js',
                          '/agilefant/static/js/utils/refLinkDisplay.js']),
- 'ruleId': set(['981203'])},
+ 'ruleId': set(['960017'])},
 {'hostName': set(['1.1.1.1']),
  'payloadContainer': set(['TX:anomaly_score']),
  'requestFileName': set(['/agilefant/ajax/iterationData.action',
@@ -347,7 +347,7 @@ class TestModsecurityAuditCorrelationEngine(unittest.TestCase):
                          '/agilefant/static/js/utils/refLinkDisplay.js']),
  'ruleId': set(['981174'])},
 {'hostName': set(['1.1.1.1']),
- 'payloadContainer': set(['REQUEST_HEADERS:Host']),
+ 'payloadContainer': set(['TX:inbound_anomaly_score']),
  'requestFileName': set(['/agilefant/ajax/iterationData.action',
                          '/agilefant/ajax/myAssignmentsMenuData.action',
                          '/agilefant/dailyWork.action',
@@ -508,13 +508,21 @@ class TestModsecurityAuditCorrelationEngine(unittest.TestCase):
                          '/agilefant/static/js/utils/menuTimer.js',
                          '/agilefant/static/js/utils/quickSearch.js',
                          '/agilefant/static/js/utils/refLinkDisplay.js']),
- 'ruleId': set(['960017'])},
+ 'ruleId': set(['981203'])},
 {'hostName': set(['1.1.1.1']),
  'payloadContainer': set(['TX:sqli_select_statement_count']),
  'requestFileName': set(['/agilefant/drawIterationBurndown.action',
                          '/agilefant/static/img/top-logo.png',
                          '/agilefant/static/js/autocomplete/autocompleteSelectedBox.js',
                          '/agilefant/static/js/backlogSelector.js']),
+ 'ruleId': set(['981317'])},
+{'hostName': set(['test.domain.com']),
+ 'payloadContainer': set(['ARGS:a', 'ARGS:b']),
+ 'requestFileName': set(['/agilefant/login.jsp']),
+ 'ruleId': set(['111111', '222222'])},
+{'hostName': set(['test.domain.com']),
+ 'payloadContainer': set(['TX:sqli_select_statement_count']),
+ 'requestFileName': set(['/agilefant/static/js/backlogSelector.js']),
  'ruleId': set(['981317'])},
 {'hostName': set(['test.domain.com']),
  'payloadContainer': set(['REQUEST_HEADERS:Host']),
@@ -572,11 +580,7 @@ class TestModsecurityAuditCorrelationEngine(unittest.TestCase):
                          '/agilefant/static/js/jquery.hotkeys.js',
                          '/agilefant/static/js/jquery.js',
                          '/agilefant/static/js/jquery.wysiwyg.js']),
- 'ruleId': set(['981203'])},
- {'hostName': set(['test.domain.com']),
- 'payloadContainer': set(['TX:sqli_select_statement_count']),
- 'requestFileName': set(['/agilefant/static/js/backlogSelector.js']),
- 'ruleId': set(['981317'])}]
+ 'ruleId': set(['981203'])}]
 
     def setUp(self):
         self._stream = io.open(MODSECURITY_AUDIT_LOG_SAMPLE_PATH, 'rt', errors = 'replace')
@@ -596,4 +600,9 @@ class TestModsecurityAuditCorrelationEngine(unittest.TestCase):
 
         print("%s data loaded" % datetime.datetime.now())
         correlationList = list(ModsecurityAuditCorrelator().correlate(dataSource))
+        import pprint
+        for correlation in correlationList:
+            pprint.pprint(correlation)
+        print(len(correlationList))
+
         self.assertEqual(self._EXPECTED_CORRELATION_LIST, correlationList)

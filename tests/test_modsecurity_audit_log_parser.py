@@ -49,7 +49,7 @@ class TestModsecurityAuditLogParser(unittest.TestCase):
                                                                      4))
 
         # Checking message list.        
-        self.assertEqual(229, self._filterEntryListAndCountByMessage(entryList,
+        self.assertEqual(228, self._filterEntryListAndCountByMessage(entryList,
                                                                     [(u'REQUEST_HEADERS:Host', u'960017'),
                                                                      (u'TX:anomaly_score', u'981174'),
                                                                      (u'TX:inbound_anomaly_score', u'981203')]))

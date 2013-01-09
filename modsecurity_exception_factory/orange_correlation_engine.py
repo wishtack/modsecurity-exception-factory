@@ -10,6 +10,7 @@
 from contracts import contract
 from contracts.main import new_contract
 import Orange.data.filter
+import copy
 import itertools
 import orange
 import orngAssoc
@@ -17,7 +18,8 @@ import orngAssoc
 new_contract('OrangeDataTable', Orange.data.Table)
 
 class ImpossibleError(Exception):
-    pass
+    def __init__(self):
+        super().__init__(u"Call the developers!")
 
 class OrangeCorrelationEngine:
     
@@ -95,56 +97,88 @@ The dict keys are variables' names and the values are set objects containing var
             # List of variables that still have to be defined.
             remainingVariableNameSet = variableNameSet - ruleVariableNameSet
                         
-            # We must continue deeper...
-            if len(remainingVariableNameSet) > 0:
+            # No more variables to find, we don't have to go deeper...
+            if len(remainingVariableNameSet) == 0:
+                correlationDictToMergeList.append(correlationDict)
+
+            # ... otherwise, we must continue...
+            else:
                 iterable = self._correlationDictIterable(matchingData, remainingVariableNameSet)
-#                firstSubCorrelationDict = None
+                firstSubCorrelationDict = None
                 
                 for index, subCorrelationDict in enumerate(iterable):
-#                    # @todo if this yields only one item don't yield, add the correlation dict to the 'toMergeList'.  
-#                    if index == 0:
-#                        firstSubCorrelationDict = subCorrelationDict
-#                        continue
-#                    
-#                    if index == 1:
-#                        yield self._unionCorrelationDict([correlationDict, firstSubCorrelationDict])
-#                        firstSubCorrelationDict = None
-#
+                    if index == 0:
+                        firstSubCorrelationDict = subCorrelationDict
+                        continue
+                    
+                    # More than one item has been yielded.
+                    if index == 1:
+                        yield self._unionCorrelationDict([correlationDict, firstSubCorrelationDict])
+                        firstSubCorrelationDict = None
+
                     yield self._unionCorrelationDict([correlationDict, subCorrelationDict])
                 
-                # Has only one item.
-#                if firstSubCorrelationDict is not None:
-#                    correlationDict = self._unionCorrelationDict([correlationDict, firstSubCorrelationDict])
-#                    correlationDictToMergeList.append(correlationDict)
+                # Only one item was yielded.
+                if firstSubCorrelationDict is not None:
+                    correlationDict = self._unionCorrelationDict([correlationDict, firstSubCorrelationDict])
+                    correlationDictToMergeList.append(correlationDict)
+#                    yield correlationDict                       
 
-                    
-            # No more variables to find, we don't have to go deeper.
-            else:
-                correlationDictToMergeList.append(correlationDict)
-        
+        # Merging correlations that can be merged.
         for mergedCorrelationDict in self._mergeCorrelationDictList(correlationDictToMergeList):
             yield mergedCorrelationDict
         
         if len(data) > 0:
-            raise ImpossibleError(u"Call the developers!")
+            raise ImpossibleError()
 
     def _mergeCorrelationDictList(self, correlationDictList):
 
-        def computeKey(correlationDict):
+        def dictAsKey(correlationDict):
+            resultDict = {}
+            for key, valueSet in correlationDict.items():
+                resultDict[key] = ",".join(valueSet)
+            return resultDict
+
+        def keyListAsKey(correlationDict):
             return list(correlationDict.keys())
             
-        correlationDictList.sort(key = computeKey)
-        for key, group in itertools.groupby(correlationDictList, key = computeKey):
-            if len(key) == 1:
-                mergedCorrelationDict = {}
-                for correlationDict in group:
+        correlationDictList.sort(key = dictAsKey)
+        for _, group in itertools.groupby(correlationDictList, key = keyListAsKey):
+            # @todo merge multiple attributes.
+            mergedCorrelationDict = None
+            mergedAttribute = None
+            for correlationDict in group:
+                if mergedCorrelationDict is None:
+                    mergedCorrelationDict = copy.deepcopy(correlationDict)
+                    continue
+
+                # Compare currently merged correlation and the new one.
+                differentAttributeList = self._differentAttributeList(mergedCorrelationDict, correlationDict)
+                if len(differentAttributeList) == 0:
+                    raise ImpossibleError()
+
+                # Only one different attribute, let's merge it if the attribute ha
+                if len(differentAttributeList) == 1 \
+                    and (mergedAttribute is None \
+                         or differentAttributeList[1] == mergedAttribute):
                     mergedCorrelationDict = self._unionCorrelationDict([mergedCorrelationDict, correlationDict])
+
+                else:
+                    yield mergedCorrelationDict
+                    mergedCorrelationDict = copy.deepcopy(correlationDict)
+
+            if mergedCorrelationDict is not None:
                 yield mergedCorrelationDict
 
-            else:
-                # @todo merge multiple attributes.
-                for correlationDict in group:
-                    yield correlationDict
+    def _differentAttributeList(self, correlationDictFirst, correlationDictSecond):
+        if set(correlationDictFirst.keys()) != set(correlationDictSecond.keys()):
+            raise ImpossibleError()
+        
+        differentAttributeList = []
+        for name in correlationDictFirst.keys():
+            if correlationDictFirst[name] != correlationDictSecond[name]:
+                differentAttributeList.append(name)
+        return differentAttributeList            
 
     def _ruleToVariableDict(self, domain, rule):
         attributeDict = {}

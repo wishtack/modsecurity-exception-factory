@@ -31,12 +31,12 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
         self._fillUpDataSource()
         
         cursor = sqlite3.connect(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_FILE_PATH).cursor()
-        self.assertEqual(711, cursor.execute(u"SELECT count(*) FROM messages").fetchone()[0])
+        self.assertEqual(715, cursor.execute(u"SELECT count(*) FROM messages").fetchone()[0])
         self.assertEqual((1,
                           u"test.domain.com",
                           u"/agilefant/login.jsp",
-                          u"REQUEST_HEADERS:Host",
-                          u"960017"),
+                          u"ARGS:a",
+                          u"111111"),
                          cursor.execute(u"SELECT * FROM messages LIMIT 1").fetchone())
 
     def testVariableValueIterable(self):
@@ -215,13 +215,15 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
                           u'/agilefant/dailyWork.action'],
                          list(dataSource.variableValueIterable("requestFileName")))
 
-        self.assertEqual([u'REQUEST_HEADERS:Host',
+        self.assertEqual([u'ARGS:a',
+                          u'ARGS:b',
+                          u'REQUEST_HEADERS:Host',
                           u'TX:anomaly_score',
                           u'TX:inbound_anomaly_score',
                           u'TX:sqli_select_statement_count'],
                          list(dataSource.variableValueIterable("payloadContainer")))
         
-        self.assertEqual([u'960017', u'981174', u'981203', u'981317'],
+        self.assertEqual([u'111111', u'222222', u'960017', u'981174', u'981203', u'981317'],
                          list(dataSource.variableValueIterable("ruleId")))
 
     def _fillUpDataSource(self):        
