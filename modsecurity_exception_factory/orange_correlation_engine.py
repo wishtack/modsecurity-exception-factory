@@ -10,6 +10,7 @@
 from contracts import contract
 from contracts.main import new_contract
 import Orange.data.filter
+import itertools
 import orange
 import orngAssoc
 
@@ -62,26 +63,20 @@ The dict keys are variables' names and the values are set objects containing var
         #         'payloadContainer': ['ARGS:param'],
         #         'requestFileName': ['/c.php', '/d.php'],
         #         'ruleId': ['333333']}
-        for variableSetDict in self._exhaustiveVariableSetDictIterable(data, self._variableNameList):
+        for variableSetDict in self._correlationDictIterable(data, set(self._variableNameList)):
             yield variableSetDict
 
-    def _exhaustiveVariableSetDictIterable(self, data, variableNameList, variableSetDict = None):
-        # Initializing local variables.
-        if variableSetDict is None:
-            variableSetDict = {}
-        
-        # Recursion end.
-        isLeaf = len(variableNameList) <= 1
-        
+    def _correlationDictIterable(self, data, variableNameSet):
+        # This list contains correlation dicts that have to be merged.
+        correlationDictToMergeList = []
+
         ruleGroup = orange.AssociationRulesInducer(data, support = 0, classification_rules = True)
         orngAssoc.sort(ruleGroup, ['support', 'n_left'])
 
         for rule in ruleGroup:
-            ruleVariableSetDict = variableSetDict.copy()
-            
-            # We only consider rules that use the attributes that have not been used yet. (i.e. in variableNameList) 
-            ruleVariableNameList = self._ruleToVariableNameList(data.domain, rule)
-            if not set(ruleVariableNameList).issubset(set(variableNameList)):
+            # We only consider rules that use the attributes that have not been used yet. (i.e. in variableNameSet) 
+            ruleVariableNameSet = self._ruleToVariableNameSet(data.domain, rule)
+            if not ruleVariableNameSet.issubset(variableNameSet):
                 continue
             
             # Select data that matches rule.
@@ -94,36 +89,62 @@ The dict keys are variables' names and the values are set objects containing var
                 # We remove the matched data from the data table.
                 data = self._filterDataByRule(data, rule, negate = True)
 
-            # Adding rule'a attributes the attribute dict.
-            for name, value in self._ruleToVariableDict(data.domain, rule).items():
-                if name not in variableSetDict:
-                    ruleVariableSetDict[name] = set()
-                    
-                ruleVariableSetDict[name].add(value)
+            # Fill correlation dict with rule's variable values.
+            correlationDict = self._makeCorrelationDictWithRule(data.domain, rule, variableNameSet)
 
-            # This is a "leaf", we regroup the last variable's values from all the rules.
-            if isLeaf:
-                variableSetDict = ruleVariableSetDict
-                continue
-            
             # List of variables that still have to be defined.
-            remainingVariableNameList = filter(lambda v: v not in ruleVariableNameList, variableNameList)
-            # We must continue...
-            if len(remainingVariableNameList) > 0:                
-                for completeVariableSetDict in self._exhaustiveVariableSetDictIterable(matchingData,
-                                                                   remainingVariableNameList,
-                                                                   ruleVariableSetDict.copy()):
-                    yield completeVariableSetDict
+            remainingVariableNameSet = variableNameSet - ruleVariableNameSet
+                        
+            # We must continue deeper...
+            if len(remainingVariableNameSet) > 0:
+                iterable = self._correlationDictIterable(matchingData, remainingVariableNameSet)
+#                firstSubCorrelationDict = None
+                
+                for index, subCorrelationDict in enumerate(iterable):
+#                    # @todo if this yields only one item don't yield, add the correlation dict to the 'toMergeList'.  
+#                    if index == 0:
+#                        firstSubCorrelationDict = subCorrelationDict
+#                        continue
+#                    
+#                    if index == 1:
+#                        yield self._unionCorrelationDict([correlationDict, firstSubCorrelationDict])
+#                        firstSubCorrelationDict = None
+#
+                    yield self._unionCorrelationDict([correlationDict, subCorrelationDict])
+                
+                # Has only one item.
+#                if firstSubCorrelationDict is not None:
+#                    correlationDict = self._unionCorrelationDict([correlationDict, firstSubCorrelationDict])
+#                    correlationDictToMergeList.append(correlationDict)
+
+                    
             # No more variables to find, we don't have to go deeper.
             else:
-                yield ruleVariableSetDict
-
-        # Avoids double yields.
-        if isLeaf:
-            yield variableSetDict
+                correlationDictToMergeList.append(correlationDict)
+        
+        for mergedCorrelationDict in self._mergeCorrelationDictList(correlationDictToMergeList):
+            yield mergedCorrelationDict
         
         if len(data) > 0:
             raise ImpossibleError(u"Call the developers!")
+
+    def _mergeCorrelationDictList(self, correlationDictList):
+
+        def computeKey(correlationDict):
+            return list(correlationDict.keys())
+            
+        correlationDictList.sort(key = computeKey)
+        for key, group in itertools.groupby(correlationDictList, key = computeKey):
+            if len(key) == 1:
+                mergedCorrelationDict = {}
+                for correlationDict in group:
+                    mergedCorrelationDict = self._unionCorrelationDict([mergedCorrelationDict, correlationDict])
+                yield mergedCorrelationDict
+
+            else:
+                # @todo merge multiple attributes.
+                for correlationDict in group:
+                    yield correlationDict
 
     def _ruleToVariableDict(self, domain, rule):
         attributeDict = {}
@@ -134,8 +155,8 @@ The dict keys are variables' names and the values are set objects containing var
                 attributeDict[attributeName] = attributeValue
         return attributeDict
 
-    def _ruleToVariableNameList(self, domain, rule):
-        return list(self._ruleToVariableDict(domain, rule).keys())
+    def _ruleToVariableNameSet(self, domain, rule):
+        return set(self._ruleToVariableDict(domain, rule).keys())
     
     def _filterDataByRule(self, data, rule, negate = False):
         valueFilter = self._ruleToFilter(data.domain, rule)
@@ -156,3 +177,27 @@ The dict keys are variables' names and the values are set objects containing var
                                                                                            attributeValue)])
             valueFilter.conditions.append(valueSubFilter)
         return valueFilter
+
+    def _fillCorrelationDictWithRule(self, correlationDict, domain, rule):
+        for name, value in self._ruleToVariableDict(domain, rule).items():
+            valueSet = correlationDict.get(name, set())
+            valueSet.add(value)
+            correlationDict[name] = valueSet            
+
+    def _makeCorrelationDictWithRule(self, domain, rule, variableNameSet):
+        correlationDict = {}
+        ruleDict = self._ruleToVariableDict(domain, rule)
+        for name in variableNameSet:
+            correlationDict[name] = set()
+            if name in ruleDict:
+                correlationDict[name].add(ruleDict[name])
+        return correlationDict
+
+    def _unionCorrelationDict(self, correlationDictList):
+        resultCorrelationDict = {}
+        for correlationDict in correlationDictList:
+            for name, valueSet in correlationDict.items():
+                resultValueSet = resultCorrelationDict.get(name, set())
+                resultValueSet = resultValueSet.union(valueSet)
+                resultCorrelationDict[name] = resultValueSet
+        return resultCorrelationDict
