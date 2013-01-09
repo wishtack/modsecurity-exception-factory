@@ -160,8 +160,9 @@ The dict keys are variables' names and the values are set objects containing var
                 # Only one different attribute, let's merge it if the attribute ha
                 if len(differentAttributeList) == 1 \
                     and (mergedAttribute is None \
-                         or differentAttributeList[1] == mergedAttribute):
+                         or differentAttributeList[0] == mergedAttribute):
                     mergedCorrelationDict = self._unionCorrelationDict([mergedCorrelationDict, correlationDict])
+                    mergedAttribute = differentAttributeList[0]
 
                 else:
                     yield mergedCorrelationDict
