@@ -167,8 +167,8 @@ The dict keys are variables' names and the values are set objects containing var
 
                 if mergeAttributeList is not None:
                     mergedCorrelationDict = self._mergeCorrelationDict(mergeAttributeList,
-                                                                       [mergedCorrelationDict,
-                                                                        correlationDict])
+                                                                       mergedCorrelationDict,
+                                                                       correlationDict)
                 else:
                     yield mergedCorrelationDict
                     mergeAttributeList = None
@@ -201,29 +201,32 @@ The dict keys are variables' names and the values are set objects containing var
         else:
             return None
     
-    def _mergeCorrelationDict(self, mergeAttributeList, correlationDictList):
+    def _mergeCorrelationDict(self, mergeAttributeList, correlationDictFirst, correlationDictSecond):
         # @todo remove hack
         if len(mergeAttributeList) == 1:
-            mergedAttribute = list(mergeAttributeList)[0]
+            mergedAttribute = mergeAttributeList[0]
         else:
             mergedAttribute = tuple(mergeAttributeList)
 
-        # First, union attributes...
-        mergedCorrelationDict = self._unionCorrelationDict(correlationDictList)
-        
-        # ... if there's only one attribute to merge, then there's nothing much to do...
-        if len(mergeAttributeList) == 1:
-            return mergedCorrelationDict
-        
-        # ... otherwise, we make the merged attribute value list if it does not exist yet...
+        # First, copy the first correlation dict and only keep common attributes...
+        mergedCorrelationDict = copy.deepcopy(correlationDictFirst)
+#        for attribute in mergeAttributeList:
+#            if attribute in mergedCorrelationDict:
+#                del mergedCorrelationDict[attribute]
+
+        # ... we make the merged attribute value list if it does not exist yet...
         if mergedAttribute not in mergedCorrelationDict:
             mergedCorrelationDict[mergedAttribute] = set()
-        
         mergedAttributeValueSet = mergedCorrelationDict[mergedAttribute]
- 
+         
+        # ... if there's only one attribute to merge, then copy values...
+        if len(mergeAttributeList) == 1:
+            for correlationDict in [correlationDictFirst, correlationDictSecond]:
+                mergedAttributeValueSet.update(correlationDict[mergedAttribute])
+        
         # ... and finally we merge the common attributes.
-        if len(mergeAttributeList) > 1:
-            for correlationDict in correlationDictList:
+        else:
+            for correlationDict in [correlationDictFirst, correlationDictSecond]:
                 valueAsList = []
                 for attribute in mergeAttributeList:
                     if len(correlationDict[attribute]) != 1:
@@ -300,9 +303,11 @@ The dict keys are variables' names and the values are set objects containing var
 
     def _unionCorrelationDict(self, correlationDictList):
         resultCorrelationDict = {}
+        
         for correlationDict in correlationDictList:
-            for name, valueSet in correlationDict.items():
-                resultValueSet = resultCorrelationDict.get(name, set())
-                resultValueSet = resultValueSet.union(valueSet)
-                resultCorrelationDict[name] = resultValueSet
+            for attribute, valueSet in correlationDict.items():
+                valueSet = correlationDict[attribute]
+                resultValueSet = resultCorrelationDict.get(attribute, set())
+                resultValueSet.update(valueSet)
+                resultCorrelationDict[attribute] = resultValueSet
         return resultCorrelationDict

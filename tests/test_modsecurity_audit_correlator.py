@@ -373,26 +373,8 @@ class TestModsecurityAuditCorrelationEngine(unittest.TestCase):
                          '/agilefant/static/js/jquery.js',
                          '/agilefant/static/js/jquery.wysiwyg.js']),
  ('payloadContainer', 'ruleId'): set([('REQUEST_HEADERS:Host', '960017'),
-                                      ('TX:anomaly_score', '981174')])},
-{'hostName': set(['test.domain.com']),
- 'payloadContainer': set(['TX:inbound_anomaly_score']),
- 'requestFileName': set(['/agilefant/editIteration.action',
-                         '/agilefant/login.jsp',
-                         '/agilefant/static/css/main.css',
-                         '/agilefant/static/img/agilefant-logo-80px.png',
-                         '/agilefant/static/img/login_gradient.png',
-                         '/agilefant/static/img/ui/ui-bg_gloss-wave_55_5c9ccc_500x100.png',
-                         '/agilefant/static/img/ui/ui-bg_inset-hard_100_fcfdfd_1x100.png',
-                         '/agilefant/static/js/backlogChooser.js',
-                         '/agilefant/static/js/backlogSelector.js',
-                         '/agilefant/static/js/date.js',
-                         '/agilefant/static/js/jquery-ui.min.js',
-                         '/agilefant/static/js/jquery.cookie.js',
-                         '/agilefant/static/js/jquery.dynatree.js',
-                         '/agilefant/static/js/jquery.hotkeys.js',
-                         '/agilefant/static/js/jquery.js',
-                         '/agilefant/static/js/jquery.wysiwyg.js']),
- 'ruleId': set(['981203'])}]
+                                      ('TX:anomaly_score', '981174'),
+                                      ('TX:inbound_anomaly_score', '981203')])}]
 
     def setUp(self):
         self._stream = io.open(MODSECURITY_AUDIT_LOG_SAMPLE_PATH, 'rt', errors = 'replace')
