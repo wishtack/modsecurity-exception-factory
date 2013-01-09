@@ -9,16 +9,10 @@
 
 from contracts import contract
 from contracts.main import new_contract
-from modsecurity_exception_factory.modsecurity_audit_data_source.i_modsecurity_audit_data_source import \
-    IModsecurityAuditDataSource
-from modsecurity_exception_factory.modsecurity_audit_data_source.modsecurity_audit_orange_data_table_factory import \
-    ModsecurityAuditOrangeDataTableFactory
 import Orange.data.filter
-import datetime
 import orange
 import orngAssoc
 
-new_contract('IModsecurityAuditDataSource', IModsecurityAuditDataSource)
 new_contract('OrangeDataTable', Orange.data.Table)
 
 class ImpossibleError(Exception):
