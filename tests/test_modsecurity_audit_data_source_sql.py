@@ -229,6 +229,7 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
         
         dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
         itemDictIterable = dataSource.itemDictIterable(['hostName', 'requestFileName', 'payloadContainer', 'ruleId'])
+
         self.assertEqual(715, len(itemDictIterable))
         
         # Checking some items values.
@@ -241,6 +242,29 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
         message = itemDictList[99]
         self.assertEqual(u"1.1.1.1", message['hostName'])
         self.assertEqual(u"/agilefant/static/js/utils/ArrayUtils.js", message['requestFileName'])
+        self.assertEqual(u"TX:anomaly_score", message['payloadContainer'])
+        self.assertEqual(u"981174", message['ruleId'])
+
+    def testModsecurityEntryMessageIterableDistinct(self):
+        self._fillUpDataSource()
+        
+        dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
+        itemDictIterable = dataSource.itemDictIterable(['hostName', 'requestFileName', 'payloadContainer', 'ruleId'])
+
+        itemDictDistinctIterable = itemDictIterable.distinct()
+        self.assertEqual(537, len(itemDictDistinctIterable))
+        self.assertEqual(715, len(itemDictIterable))
+        
+        # Checking some item values.
+        itemDictDistinctList = list(itemDictDistinctIterable)
+        message = itemDictDistinctList[67]
+        self.assertEqual(u"1.1.1.1", message['hostName'])
+        self.assertEqual(u"/agilefant/static/js/jquery.tagcloud.min.js", message['requestFileName'])
+        self.assertEqual(u"TX:inbound_anomaly_score", message['payloadContainer'])
+        self.assertEqual(u"981203", message['ruleId'])
+        message = itemDictDistinctList[99]
+        self.assertEqual(u"1.1.1.1", message['hostName'])
+        self.assertEqual(u"/agilefant/static/js/utils/Parsers.js", message['requestFileName'])
         self.assertEqual(u"TX:anomaly_score", message['payloadContainer'])
         self.assertEqual(u"981174", message['ruleId'])
 
