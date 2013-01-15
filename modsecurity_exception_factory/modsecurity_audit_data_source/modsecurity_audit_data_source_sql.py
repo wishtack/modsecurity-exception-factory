@@ -11,10 +11,16 @@ from Orange.data.sql import SQLReader, __PostgresQuirkFix as PostgresQuirkFix
 from contracts import contract, new_contract
 from modsecurity_exception_factory.modsecurity_audit_data_source.i_modsecurity_audit_data_source import \
     IModsecurityAuditDataSource
-from modsecurity_exception_factory.modsecurity_audit_data_source.sql_base import SQLBase
+from modsecurity_exception_factory.modsecurity_audit_data_source.modsecurity_audit_item_dict_iterable_sql import \
+    ModsecurityAuditItemDictIterableSQL
+from modsecurity_exception_factory.modsecurity_audit_data_source.modsecurity_audit_item_iterable_sql import \
+    ModsecurityAuditItemIterableSQL
+from modsecurity_exception_factory.modsecurity_audit_data_source.sql_base import \
+    SQLBase
 from modsecurity_exception_factory.modsecurity_audit_data_source.sql_modsecurity_audit_entry_message import \
     SQLModsecurityAuditEntryMessage
-from modsecurity_exception_factory.modsecurity_audit_entry import ModsecurityAuditEntry
+from modsecurity_exception_factory.modsecurity_audit_entry import \
+    ModsecurityAuditEntry
 from sqlalchemy.engine import create_engine
 from sqlalchemy.engine.url import make_url
 from sqlalchemy.orm.session import sessionmaker
@@ -35,7 +41,6 @@ class ModsecurityAuditDataSourceSQL(IModsecurityAuditDataSource):
         self._dataBaseUrl = dataBaseUrl
         self._sqlEngine = create_engine(dataBaseUrl)
         self._sessionMaker = sessionmaker(bind = self._sqlEngine)
-        self._columnNameList = None
         self._initialized = False
 
     def insertModsecurityAuditEntryIterable(self, modsecurityAuditEntryIterable):
@@ -72,6 +77,13 @@ class ModsecurityAuditDataSourceSQL(IModsecurityAuditDataSource):
                 yield row[0]
         finally:
             session.close()
+
+    @contract
+    def itemDictIterable(self, variableNameList):
+        """
+    :type variableNameList: list(str)
+"""
+        return ModsecurityAuditItemDictIterableSQL(self._sessionMaker, variableNameList)
 
     def orangeDataReader(self):        
         reader = SQLReader()

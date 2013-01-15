@@ -6,9 +6,12 @@
 #
 # $Id: $
 #
-from abc import abstractmethod
 
-class IModsecurityAuditDataSource:
+from abc import abstractmethod
+from modsecurity_exception_factory.correlation.i_item_data_source import \
+    IItemDataSource
+
+class IModsecurityAuditDataSource(IItemDataSource):
     
     @abstractmethod
     def insertModsecurityAuditEntryIterable(self, modsecurityAuditEntryIterable):
@@ -17,7 +20,7 @@ class IModsecurityAuditDataSource:
     @abstractmethod
     def variableValueIterable(self, columnName):
         raise NotImplementedError()
-    
+
     @abstractmethod
     def orangeDataReader(self):
         raise NotImplementedError()

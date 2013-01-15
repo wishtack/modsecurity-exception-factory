@@ -44,8 +44,6 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
         
         dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
         
-
-        
         self.assertEqual([u'test.domain.com', u'1.1.1.1'],
                          list(dataSource.variableValueIterable("hostName")))
         
@@ -226,7 +224,26 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
         self.assertEqual([u'111111', u'222222', u'960017', u'981174', u'981203', u'981317'],
                          list(dataSource.variableValueIterable("ruleId")))
 
-    def _fillUpDataSource(self):        
+    def testModsecurityEntryMessageIterable(self):
+        self._fillUpDataSource()
+        
+        dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
+        itemDictList = list(dataSource.itemDictIterable(['hostName', 'requestFileName', 'payloadContainer', 'ruleId']))
+        self.assertEqual(715, len(itemDictList))
+        
+        # Checking some items values.
+        message = itemDictList[67]
+        self.assertEqual(u"1.1.1.1", message['hostName'])
+        self.assertEqual(u"/agilefant/static/js/jquery.autoSuggest.minified.js", message['requestFileName'])
+        self.assertEqual(u"TX:inbound_anomaly_score", message['payloadContainer'])
+        self.assertEqual(u"981203", message['ruleId'])
+        message = itemDictList[99]
+        self.assertEqual(u"1.1.1.1", message['hostName'])
+        self.assertEqual(u"/agilefant/static/js/utils/ArrayUtils.js", message['requestFileName'])
+        self.assertEqual(u"TX:anomaly_score", message['payloadContainer'])
+        self.assertEqual(u"981174", message['ruleId'])
+
+    def _fillUpDataSource(self):
         iterable = ModsecurityAuditLogParser().parseStream(self._stream)
         dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
         dataSource.insertModsecurityAuditEntryIterable(iterable)        
