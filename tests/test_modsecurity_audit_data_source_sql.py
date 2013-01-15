@@ -228,10 +228,11 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
         self._fillUpDataSource()
         
         dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
-        itemDictList = list(dataSource.itemDictIterable(['hostName', 'requestFileName', 'payloadContainer', 'ruleId']))
-        self.assertEqual(715, len(itemDictList))
+        itemDictIterable = dataSource.itemDictIterable(['hostName', 'requestFileName', 'payloadContainer', 'ruleId'])
+        self.assertEqual(715, len(itemDictIterable))
         
         # Checking some items values.
+        itemDictList = list(itemDictIterable)
         message = itemDictList[67]
         self.assertEqual(u"1.1.1.1", message['hostName'])
         self.assertEqual(u"/agilefant/static/js/jquery.autoSuggest.minified.js", message['requestFileName'])

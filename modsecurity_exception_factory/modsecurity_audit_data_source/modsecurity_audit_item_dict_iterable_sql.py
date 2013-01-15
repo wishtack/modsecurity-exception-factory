@@ -28,16 +28,26 @@ class ModsecurityAuditItemDictIterableSQL:
     def __iter__(self):
         return _ModsecurityAuditItemDictIteratorSQL(self._generator())
 
+    def __len__(self):
+        try:
+            session = self._sessionMaker()
+            return self._query(session).count()
+        finally:
+            session.close()
+
     def _generator(self):
         try:
             session = self._sessionMaker()
-            for sqlItem in session.query(SQLModsecurityAuditEntryMessage):
+            for sqlItem in self._query(session):
                 itemDict = {}
                 for variableName in self._variableNameList:
                     itemDict[variableName] = getattr(sqlItem, variableName)
                 yield itemDict
         finally:
             session.close()
+    
+    def _query(self, session):
+        return session.query(SQLModsecurityAuditEntryMessage)
 
 class _ModsecurityAuditItemDictIteratorSQL:
 

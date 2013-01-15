@@ -13,8 +13,6 @@ from modsecurity_exception_factory.modsecurity_audit_data_source.i_modsecurity_a
     IModsecurityAuditDataSource
 from modsecurity_exception_factory.modsecurity_audit_data_source.modsecurity_audit_item_dict_iterable_sql import \
     ModsecurityAuditItemDictIterableSQL
-from modsecurity_exception_factory.modsecurity_audit_data_source.modsecurity_audit_item_iterable_sql import \
-    ModsecurityAuditItemIterableSQL
 from modsecurity_exception_factory.modsecurity_audit_data_source.sql_base import \
     SQLBase
 from modsecurity_exception_factory.modsecurity_audit_data_source.sql_modsecurity_audit_entry_message import \
