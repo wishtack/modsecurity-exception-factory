@@ -80,21 +80,14 @@ The dict keys are variables' names and the values are set objects containing var
         # This list contains correlation dicts that have to be merged.
         correlationDictToMergeList = []
 
-        ruleGroup = orange.AssociationRulesInducer(data, support = 0, classification_rules = True)
-        orngAssoc.sort(ruleGroup, ['support', 'n_left'])
-
-        for rule in ruleGroup:
-            # We only consider rules that use the attributes that have not been used yet. (i.e. in variableNameSet) 
-            ruleVariableNameSet = self._ruleToVariableNameSet(data.domain, rule)
-            if not ruleVariableNameSet.issubset(variableNameSet):
-                continue
-            
+        rule = self._induce(data, variableNameSet)
+        while rule is not None:
             # Select data that matches rule.
             matchingData = self._filterDataByRule(data, rule)
 
             # Data has already been consumed by other rules.
             if len(matchingData) == 0:
-                continue
+                raise ImpossibleError()
             else:
                 # We remove the matched data from the data table.
                 data = self._filterDataByRule(data, rule, negate = True)
@@ -103,7 +96,7 @@ The dict keys are variables' names and the values are set objects containing var
             correlationDict = self._makeCorrelationDictWithRule(data.domain, rule, variableNameSet)
 
             # List of variables that still have to be defined.
-            remainingVariableNameSet = variableNameSet - ruleVariableNameSet
+            remainingVariableNameSet = variableNameSet - self._ruleToVariableNameSet(data.domain, rule)
                         
             # No more variables to find, we don't have to go deeper...
             if len(remainingVariableNameSet) == 0:
@@ -117,6 +110,7 @@ The dict keys are variables' names and the values are set objects containing var
                 for index, subCorrelationDict in enumerate(iterable):
                     if index == 0:
                         firstSubCorrelationDict = subCorrelationDict
+                        rule = self._induce(data, variableNameSet)
                         continue
                     
                     # More than one item has been yielded.
@@ -130,6 +124,8 @@ The dict keys are variables' names and the values are set objects containing var
                 if firstSubCorrelationDict is not None:
                     correlationDict = self._unionCorrelationDict([correlationDict, firstSubCorrelationDict])
                     correlationDictToMergeList.append(correlationDict)
+            
+            rule = self._induce(data, variableNameSet)
 
         # Merging correlations that can be merged.
         for mergedCorrelationDict in self._mergeCorrelationDictList(correlationDictToMergeList):
@@ -137,6 +133,26 @@ The dict keys are variables' names and the values are set objects containing var
         
         if len(data) > 0:
             raise ImpossibleError()
+
+    def _induce(self, data, variableNameSet):
+        ruleGroup = orange.AssociationRulesInducer(data, support = 0, classification_rules = True)
+        orngAssoc.sort(ruleGroup, ['support', 'n_left'])
+        
+        def filterFunction(rule):
+            if rule.n_left != 1:
+                return False 
+        
+            # We only consider rules that use the attributes that have not been used yet. (i.e. in variableNameSet) 
+            ruleVariableNameSet = self._ruleToVariableNameSet(data.domain, rule)
+            if not ruleVariableNameSet.issubset(variableNameSet):
+                return False
+            
+            return True
+        ruleList = list(filter(filterFunction, ruleGroup))
+        if len(ruleList) > 0:
+            return ruleList[0]
+        else:
+            return None
 
     def _mergeCorrelationDictList(self, correlationDictList):
 
@@ -180,26 +196,28 @@ The dict keys are variables' names and the values are set objects containing var
     def _makeMergeAttributeList(self, currentMergeAttributeList, correlationDictFirst, correlationDictSecond):
         """Return the set of attributes to merge or None if impossible to merge."""
         # Compare currently merged correlation and the new one.
-        differentAttributeList = self._differentAttributeList(correlationDictFirst, correlationDictSecond)
+        differentAttributeList = self._differentAttributeList(correlationDictFirst, correlationDictSecond)    
+            
         if len(differentAttributeList) == 0:
             raise ImpossibleError()
 
-        if len(differentAttributeList) == 1:
-            mergeAttributeList = differentAttributeList
-        else:
-            mergeAttributeList = list(filter(lambda attribute: \
-                                                 len(correlationDictFirst[attribute]) \
-                                                 == len(correlationDictSecond[attribute]) \
-                                                 == 1,
-                                                 self._correlationDictSimpleKeyIterable(differentAttributeList)))
-            mergeAttributeList.sort()
+        mergeAttributeList = differentAttributeList
+        mergeAttributeList.sort()
+        
+        # If we have many different attributes we only merge them if they don't have multiple values.
+        if (len(mergeAttributeList) > 1) \
+            and any(filter(lambda attribute: \
+                               len(correlationDictFirst.get(attribute, set())) > 1 \
+                               or len(correlationDictFirst.get(attribute, set())) > 1,
+                      mergeAttributeList)):
+            mergeAttributeList = None
 
         # When 'currentMergeAttributeList' is None, it means that there's no merging context yet...
-        # ... and 'mergeAttributeList == currentMergeAttributeList' means that everything is fine, we are still in the same context, we can merge.
-        if currentMergeAttributeList is None or (mergeAttributeList == currentMergeAttributeList):
-            return mergeAttributeList
-        else:
-            return None
+        # ... and 'mergeAttributeList == curentMergeAttributeList' means that everything is fine, we are still in the same context, we can merge.
+        if (currentMergeAttributeList is not None) and (mergeAttributeList != currentMergeAttributeList):
+            mergeAttributeList = None
+
+        return mergeAttributeList
     
     def _mergeCorrelationDict(self, mergeAttributeList, correlationDictFirst, correlationDictSecond):
         # @todo remove hack
@@ -209,7 +227,10 @@ The dict keys are variables' names and the values are set objects containing var
             mergedAttribute = tuple(mergeAttributeList)
 
         # First, copy the first correlation dict and only keep common attributes...
-        mergedCorrelationDict = copy.deepcopy(correlationDictFirst)
+        mergedCorrelationDict = {}
+        for attribute in correlationDictFirst:
+            if attribute not in mergeAttributeList:
+                mergedCorrelationDict[attribute] = correlationDictFirst[attribute].copy()
 
         # ... we make the merged attribute value list if it does not exist yet...
         mergedAttributeValueSet = mergedCorrelationDict.get(mergedAttribute, set())
@@ -225,21 +246,22 @@ The dict keys are variables' names and the values are set objects containing var
             for correlationDict in [correlationDictFirst, correlationDictSecond]:
                 valueAsList = []
                 for attribute in mergeAttributeList:
-                    if len(correlationDict[attribute]) != 1:
-                        raise ImpossibleError()
-                    valueAsList.append(list(correlationDict[attribute])[0])
-                valueAsTuple = tuple(valueAsList)
-                mergedAttributeValueSet.add(valueAsTuple)
+                    if attribute in correlationDict:
+                        valueSet = correlationDict[attribute]
+                        if len(valueSet) != 1:
+                            raise ImpossibleError()
+                        valueAsList.append(list(valueSet)[0])
+                
+                if len(valueAsList) > 0:
+                    valueAsTuple = tuple(valueAsList)
+                    mergedAttributeValueSet.add(valueAsTuple)
 
         return mergedCorrelationDict
 
     def _differentAttributeList(self, correlationDictFirst, correlationDictSecond):
-        if self._attributeSet(correlationDictFirst) != self._attributeSet(correlationDictSecond):
-            raise ImpossibleError()
-        
         differentAttributeSet = set()
-        for key in self._correlationDictSimpleKeyIterable(correlationDictFirst):
-            if correlationDictFirst[key] != correlationDictSecond[key]:
+        for key in self._correlationDictSimpleKeyIterable(correlationDictSecond):
+            if correlationDictFirst.get(key, None) != correlationDictSecond[key]:
                 differentAttributeSet.add(key)
 
         return list(differentAttributeSet)
