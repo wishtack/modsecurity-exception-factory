@@ -268,6 +268,15 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
         self.assertEqual(u"TX:anomaly_score", message['payloadContainer'])
         self.assertEqual(u"981174", message['ruleId'])
 
+    def testMostFrequentAttribute(self):
+        self._fillUpDataSource()
+        
+        dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
+        itemDictIterable = dataSource.itemDictIterable(['hostName', 'requestFileName', 'payloadContainer', 'ruleId'])
+
+        self.assertEqual({'variableName': u'hostName', 'variableValue': u'1.1.1.1'},
+                         itemDictIterable.mostFrequentVariableAndValue())
+
     def _fillUpDataSource(self):
         iterable = ModsecurityAuditLogParser().parseStream(self._stream)
         dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
