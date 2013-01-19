@@ -17,11 +17,12 @@ from modsecurity_exception_factory.modsecurity_audit_data_source.sql_base import
     SQLBase
 from modsecurity_exception_factory.modsecurity_audit_data_source.sql_modsecurity_audit_entry_message import \
     SQLModsecurityAuditEntryMessage
+from modsecurity_exception_factory.modsecurity_audit_data_source.sql_session_maker_with_exit_handler import \
+    SQLSessionMakerForWithStatement
 from modsecurity_exception_factory.modsecurity_audit_entry import \
     ModsecurityAuditEntry
 from sqlalchemy.engine import create_engine
 from sqlalchemy.engine.url import make_url
-from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.sql.expression import distinct
 import sqlite3
 
@@ -38,7 +39,7 @@ class ModsecurityAuditDataSourceSQL(IModsecurityAuditDataSource):
 """
         self._dataBaseUrl = dataBaseUrl
         self._sqlEngine = create_engine(dataBaseUrl)
-        self._sessionMaker = sessionmaker(bind = self._sqlEngine)
+        self._sessionMaker = SQLSessionMakerForWithStatement(bind = self._sqlEngine)
         self._initialized = False
 
     def insertModsecurityAuditEntryIterable(self, modsecurityAuditEntryIterable):
@@ -69,12 +70,9 @@ class ModsecurityAuditDataSourceSQL(IModsecurityAuditDataSource):
         if not self._columnExists(columnName):
             return
         
-        try:
-            session = self._sessionMaker()
+        with self._sessionMaker() as session:
             for row in session.query(distinct(getattr(SQLModsecurityAuditEntryMessage, columnName))):
                 yield row[0]
-        finally:
-            session.close()
 
     @contract
     def itemDictIterable(self, variableNameList):
@@ -123,10 +121,7 @@ class ModsecurityAuditDataSourceSQL(IModsecurityAuditDataSource):
         """
     :type sqlModsecurityAuditEntryMessageBuffer: list(SQLModsecurityAuditEntryMessage)
 """
-        session = self._sessionMaker()
-        try:
+        with self._sessionMaker() as session:
             session.add_all(sqlModsecurityAuditEntryMessageBuffer)
             session.commit()
-            del sqlModsecurityAuditEntryMessageBuffer[:]
-        finally:
-            session.close()
+        del sqlModsecurityAuditEntryMessageBuffer[:]

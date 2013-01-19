@@ -22,14 +22,13 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
     def setUp(self):
         self._stream = io.open(MODSECURITY_AUDIT_LOG_SAMPLE_PATH, 'rt')
         cleanUp()
+        self._fillUpDataSource()
     
     def tearDown(self):
         self._stream.close()
         cleanUp()
 
     def testInsertModsecurityAuditEntryIterable(self):
-        self._fillUpDataSource()
-        
         cursor = sqlite3.connect(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_FILE_PATH).cursor()
         self.assertEqual(715, cursor.execute(u"SELECT count(*) FROM messages").fetchone()[0])
         self.assertEqual((1,
@@ -40,8 +39,6 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
                          cursor.execute(u"SELECT * FROM messages LIMIT 1").fetchone())
 
     def testVariableValueIterable(self):
-        self._fillUpDataSource()
-        
         dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
         
         self.assertEqual([u'test.domain.com', u'1.1.1.1'],
@@ -225,8 +222,6 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
                          list(dataSource.variableValueIterable("ruleId")))
 
     def testModsecurityEntryMessageIterable(self):
-        self._fillUpDataSource()
-        
         dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
         itemDictIterable = dataSource.itemDictIterable(['hostName', 'requestFileName', 'payloadContainer', 'ruleId'])
 
@@ -246,8 +241,6 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
         self.assertEqual(u"981174", message['ruleId'])
 
     def testModsecurityEntryMessageIterableDistinct(self):
-        self._fillUpDataSource()
-        
         dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
         itemDictIterable = dataSource.itemDictIterable(['hostName', 'requestFileName', 'payloadContainer', 'ruleId'])
 
@@ -269,13 +262,41 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
         self.assertEqual(u"981174", message['ruleId'])
 
     def testMostFrequentAttribute(self):
-        self._fillUpDataSource()
-        
         dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
         itemDictIterable = dataSource.itemDictIterable(['hostName', 'requestFileName', 'payloadContainer', 'ruleId'])
 
         self.assertEqual({'variableName': u'hostName', 'variableValue': u'1.1.1.1'},
                          itemDictIterable.mostFrequentVariableAndValue())
+
+    def testFilter(self):
+        dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
+        itemDictIterableOriginal = dataSource.itemDictIterable(['hostName', 'requestFileName', 'payloadContainer', 'ruleId'])
+        
+        # Filtering by request file name.
+        itemDictIterable = itemDictIterableOriginal.filter({'hostName':
+                                                            [u"test.domain.com"]})
+        
+        self.assertEqual(59, len(itemDictIterable))
+        
+        # Reverse filtering by host name and rule id.
+        itemDictIterable = itemDictIterable.filter({'requestFileName': [u"/agilefant/static/js/jquery.hotkeys.js"],
+                                                    'ruleId': [u"981174", u"981203"]},
+                                                   negate = True)
+
+        self.assertEqual(57, len(itemDictIterable))
+        
+        # Testing that 'distinct' works with filters.
+        itemDictIterable = itemDictIterable.distinct()
+        self.assertEqual(51, len(itemDictIterable))
+
+        # Checking that the original iterable has not been modified.
+        self.assertEqual(715, len(itemDictIterableOriginal))
+        
+        # Checking that other methods work with filters.
+        self.assertEqual({'variableName': u'hostName', 'variableValue': u'test.domain.com'},
+                         itemDictIterable.mostFrequentVariableAndValue())
+        # Testing iterator.
+        self.assertEqual(51, len(list(itemDictIterable)))
 
     def _fillUpDataSource(self):
         iterable = ModsecurityAuditLogParser().parseStream(self._stream)

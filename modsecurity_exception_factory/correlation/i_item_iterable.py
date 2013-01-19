@@ -17,3 +17,7 @@ class IItemIterable:
     @abstractmethod
     def distinct(self):
         raise NotImplementedError()
+
+    @abstractmethod
+    def filter(self, conditionDict, negate = False):
+        raise NotImplementedError()
