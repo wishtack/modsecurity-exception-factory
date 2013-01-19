@@ -6,10 +6,14 @@
 #
 # $Id: $
 #
+
 import os
 
-MODSECURITY_AUDIT_LOG_SAMPLE_PATH = u"data/modsec_audit.log"
-MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_FILE_PATH = u"tmp/modsecurity_audit_entry.db"
+def testFilePath(relativePath):
+    return os.path.join(os.path.dirname(__file__), relativePath)
+
+MODSECURITY_AUDIT_LOG_SAMPLE_PATH = testFilePath(u"data/modsec_audit.log")
+MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_FILE_PATH = testFilePath(u"tmp/modsecurity_audit_entry.db")
 MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL = "sqlite:///%s" % MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_FILE_PATH
 
 def cleanUp():

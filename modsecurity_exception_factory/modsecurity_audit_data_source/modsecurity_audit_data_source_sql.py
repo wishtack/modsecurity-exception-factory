@@ -17,7 +17,7 @@ from modsecurity_exception_factory.modsecurity_audit_data_source.sql_base import
     SQLBase
 from modsecurity_exception_factory.modsecurity_audit_data_source.sql_modsecurity_audit_entry_message import \
     SQLModsecurityAuditEntryMessage
-from modsecurity_exception_factory.modsecurity_audit_data_source.sql_session_maker_with_exit_handler import \
+from modsecurity_exception_factory.modsecurity_audit_data_source.sql_session_maker_for_with_statement import \
     SQLSessionMakerForWithStatement
 from modsecurity_exception_factory.modsecurity_audit_entry import \
     ModsecurityAuditEntry

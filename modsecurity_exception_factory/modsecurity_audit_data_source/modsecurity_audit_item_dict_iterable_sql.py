@@ -68,15 +68,19 @@ class ModsecurityAuditItemDictIterableSQL(IItemIterable):
                                                    distinct = self._distinct,
                                                    filterList = self._filterList + [filterObject])
 
-    def mostFrequentVariableAndValue(self):
+    @contract
+    def mostFrequentVariableAndValue(self, variableNameList):
+        """
+    :type variableNameList: list(str)
+"""
         subQueryList = []
         
-        if len(self._variableNameList) == 0:
+        if len(variableNameList) == 0:
             raise EmptyVariableNameListError()
 
         with self._sessionMaker() as session:
             # For each variable, retrieve all possible values and their occurrence count.
-            for variableName in self._variableNameList:
+            for variableName in variableNameList:
                 variableNameColumn = literal(variableName).label(self._VARIABLE_NAME_KEY)
                 variableValueColumn = getattr(SQLModsecurityAuditEntryMessage, variableName).label(self._VARIABLE_VALUE_KEY)
                 variableValueCountColumn = count().label(self._VARIABLE_VALUE_COUNT_KEY)

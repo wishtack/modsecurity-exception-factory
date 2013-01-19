@@ -15,6 +15,10 @@ class IItemIterable:
         raise NotImplementedError()
 
     @abstractmethod
+    def mostFrequentVariableAndValue(self, variableNameList):
+        raise NotImplementedError()
+
+    @abstractmethod
     def distinct(self):
         raise NotImplementedError()
 

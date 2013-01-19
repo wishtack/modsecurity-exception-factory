@@ -266,11 +266,15 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
         itemDictIterable = dataSource.itemDictIterable(['hostName', 'requestFileName', 'payloadContainer', 'ruleId'])
 
         self.assertEqual({'variableName': u'hostName', 'variableValue': u'1.1.1.1'},
-                         itemDictIterable.mostFrequentVariableAndValue())
+                         itemDictIterable.mostFrequentVariableAndValue(['hostName', 'requestFileName', 'payloadContainer', 'ruleId']))
+
+        self.assertEqual({'variableName': u'ruleId', 'variableValue': u'960017'},
+                         itemDictIterable.mostFrequentVariableAndValue(['ruleId']))
 
     def testFilter(self):
         dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
-        itemDictIterableOriginal = dataSource.itemDictIterable(['hostName', 'requestFileName', 'payloadContainer', 'ruleId'])
+        variableNameList = ['hostName', 'requestFileName', 'payloadContainer', 'ruleId']
+        itemDictIterableOriginal = dataSource.itemDictIterable(variableNameList)
         
         # Filtering by request file name.
         itemDictIterable = itemDictIterableOriginal.filter({'hostName':
@@ -294,7 +298,7 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
         
         # Checking that other methods work with filters.
         self.assertEqual({'variableName': u'hostName', 'variableValue': u'test.domain.com'},
-                         itemDictIterable.mostFrequentVariableAndValue())
+                         itemDictIterable.mostFrequentVariableAndValue(variableNameList))
         # Testing iterator.
         self.assertEqual(51, len(list(itemDictIterable)))
 
