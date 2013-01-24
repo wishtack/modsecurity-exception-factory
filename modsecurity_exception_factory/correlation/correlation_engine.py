@@ -8,22 +8,14 @@
 #
 
 from contracts import contract
-from contracts.main import new_contract
-from modsecurity_exception_factory.modsecurity_audit_data_source.modsecurity_audit_orange_data_table_factory import \
-    ModsecurityAuditOrangeDataTableFactory
-import Orange.data.filter
 import copy
 import itertools
-import orange
-import orngAssoc
-
-new_contract('OrangeDataTable', Orange.data.Table)
 
 class ImpossibleError(Exception):
     def __init__(self):
         super(self.__class__, self).__init__(u"Call the developers!")
 
-class OrangeCorrelationEngine:
+class CorrelationEngine:
     
     _EMPTY_ATTRIBUTE_VALUE = '~'
 
@@ -36,39 +28,6 @@ class OrangeCorrelationEngine:
 The dict keys are variables' names and the values are set objects containing variables' values.
     :type minimumOccurrenceCountThreshold: int
 """
-        dataFactory = ModsecurityAuditOrangeDataTableFactory()
-        data = dataFactory.entryMessageData(dataSource, self._variableNameList)
-        
-        if len(data) == 0:
-            return
-
-        # Association.
-        support = float(minimumOccurrenceCountThreshold) / len(data)
-        ruleGroup = orange.AssociationRulesInducer(data, support = support, classification_rules = True)
-        
-        # Filter data.
-        data = self._filterDataByRuleGroup(data, ruleGroup)
-        data.remove_duplicates()
-
-        # 'ruleGroup' contains the rules that we are looking for but some of them are too generic as they might
-        # specify values for only few variables. We need an exhaustive list of possible correlations.
-        #
-        # Ex.:
-        #     We get:
-        #
-        #        {'hostName': 'test.domain.com',
-        #         'payloadContainer': 'ARGS:param'}
-        #
-        #     But we need something like in order to make the exceptions:
-        #
-        #        {'hostName': ['test.domain.com'],
-        #         'payloadContainer': ['ARGS:param'],
-        #         'requestFileName': ['/a.php', '/b.php'],
-        #         'ruleId': ['111111', '222222']}
-        #        {'hostName': ['test.domain.com'],
-        #         'payloadContainer': ['ARGS:param'],
-        #         'requestFileName': ['/c.php', '/d.php'],
-        #         'ruleId': ['333333']}
         itemDictIterable = dataSource.itemDictIterable(self._variableNameList)
         for variableSetDict in self._correlationDictIterable(itemDictIterable, set(self._variableNameList)):
             yield variableSetDict
@@ -152,26 +111,6 @@ The dict keys are variables' names and the values are set objects containing var
         for variableName, variableValue in mostFrequentVariableNameAndValue.items():
             correlationDict[variableName] = set(variableValue)
         return correlationDict
-
-    def _induce(self, data, variableNameSet):
-        ruleGroup = orange.AssociationRulesInducer(data, support = 0, classification_rules = True)
-        orngAssoc.sort(ruleGroup, ['support', 'n_left'])
-        
-        def filterFunction(rule):
-            if rule.n_left != 1:
-                return False 
-        
-            # We only consider rules that use the attributes that have not been used yet. (i.e. in variableNameSet) 
-            ruleVariableNameSet = self._ruleToVariableNameSet(data.domain, rule)
-            if not ruleVariableNameSet.issubset(variableNameSet):
-                return False
-            
-            return True
-        ruleList = list(filter(filterFunction, ruleGroup))
-        if len(ruleList) > 0:
-            return ruleList[0]
-        else:
-            return None
 
     def _mergeCorrelationDictList(self, correlationDictList):
 
@@ -290,53 +229,6 @@ The dict keys are variables' names and the values are set objects containing var
     def _attributeSet(self, correlationDict):
         # Ignoring merged attributes tuples.
         return set(filter(lambda key: isinstance(key, str), correlationDict.keys()))
-
-    def _ruleToVariableDict(self, domain, rule):
-        attributeDict = {}
-        for attribute in domain:
-            attributeName = attribute.name
-            attributeValue = rule.left[attribute].value
-            if attributeValue != self._EMPTY_ATTRIBUTE_VALUE:
-                attributeDict[attributeName] = attributeValue
-        return attributeDict
-
-    def _ruleToVariableNameSet(self, domain, rule):
-        return set(self._ruleToVariableDict(domain, rule).keys())
-    
-    def _filterDataByRule(self, data, rule, negate = False):
-        valueFilter = self._ruleToFilter(data.domain, rule)
-        return valueFilter(data, negate = negate)
-
-    def _filterDataByRuleGroup(self, data, ruleGroup):
-        valueFilterList = [self._ruleToFilter(data.domain, rule) for rule in ruleGroup]
-        disjunctionFilter = Orange.data.filter.Disjunction(valueFilterList)
-        return disjunctionFilter(data)
-
-    def _ruleToFilter(self, domain, rule):
-        valueFilter = Orange.data.filter.Values()
-        valueFilter.domain = domain
-        for attributeName, attributeValue in self._ruleToVariableDict(domain, rule).items():
-            attribute = domain[attributeName]
-            valueSubFilter = Orange.data.filter.ValueFilterDiscrete(position = domain.features.index(attribute),
-                                                               values = [Orange.data.Value(attribute,
-                                                                                           attributeValue)])
-            valueFilter.conditions.append(valueSubFilter)
-        return valueFilter
-
-    def _fillCorrelationDictWithRule(self, correlationDict, domain, rule):
-        for name, value in self._ruleToVariableDict(domain, rule).items():
-            valueSet = correlationDict.get(name, set())
-            valueSet.add(value)
-            correlationDict[name] = valueSet            
-
-    def _makeCorrelationDictWithRule(self, domain, rule, variableNameSet):
-        correlationDict = {}
-        ruleDict = self._ruleToVariableDict(domain, rule)
-        for name in variableNameSet:
-            correlationDict[name] = set()
-            if name in ruleDict:
-                correlationDict[name].add(ruleDict[name])
-        return correlationDict
 
     def _unionCorrelationDict(self, correlationDictList):
         resultCorrelationDict = {}
