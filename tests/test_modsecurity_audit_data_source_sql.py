@@ -265,42 +265,57 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
         dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
         itemDictIterable = dataSource.itemDictIterable(['hostName', 'requestFileName', 'payloadContainer', 'ruleId'])
 
-        self.assertEqual({'variableName': u'hostName', 'variableValue': u'1.1.1.1'},
+
+        self.assertEqual({'hostName': u'1.1.1.1'},
                          itemDictIterable.mostFrequentVariableAndValue(['hostName', 'requestFileName', 'payloadContainer', 'ruleId']))
 
-        self.assertEqual({'variableName': u'ruleId', 'variableValue': u'960017'},
+        self.assertEqual({'ruleId': u'960017'},
                          itemDictIterable.mostFrequentVariableAndValue(['ruleId']))
 
-    def testFilter(self):
+    def testFilterWithConditionDict(self):
         dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
         variableNameList = ['hostName', 'requestFileName', 'payloadContainer', 'ruleId']
         itemDictIterableOriginal = dataSource.itemDictIterable(variableNameList)
         
         # Filtering by request file name.
-        itemDictIterable = itemDictIterableOriginal.filter({'hostName':
-                                                            [u"test.domain.com"]})
+        itemDictIterable = itemDictIterableOriginal.filterByVariable('hostName',
+                                                                     [u"test.domain.com"])
         
         self.assertEqual(59, len(itemDictIterable))
         
         # Reverse filtering by host name and rule id.
-        itemDictIterable = itemDictIterable.filter({'requestFileName': [u"/agilefant/static/js/jquery.hotkeys.js"],
-                                                    'ruleId': [u"981174", u"981203"]},
-                                                   negate = True)
+        itemDictIterable = itemDictIterable.filterByVariable('requestFileName',
+                                                             [u"/agilefant/static/js/jquery.hotkeys.js"],
+                                                             negate = True)
 
-        self.assertEqual(57, len(itemDictIterable))
+        self.assertEqual(56, len(itemDictIterable))
         
         # Testing that 'distinct' works with filters.
         itemDictIterable = itemDictIterable.distinct()
-        self.assertEqual(51, len(itemDictIterable))
+        self.assertEqual(50, len(itemDictIterable))
 
         # Checking that the original iterable has not been modified.
         self.assertEqual(715, len(itemDictIterableOriginal))
         
         # Checking that other methods work with filters.
-        self.assertEqual({'variableName': u'hostName', 'variableValue': u'test.domain.com'},
+        self.assertEqual({'hostName': u'test.domain.com'},
                          itemDictIterable.mostFrequentVariableAndValue(variableNameList))
         # Testing iterator.
-        self.assertEqual(51, len(list(itemDictIterable)))
+        self.assertEqual(50, len(list(itemDictIterable)))
+
+    def testFilterWithConditionDictMany(self):
+        dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
+        variableNameList = ['hostName', 'requestFileName', 'payloadContainer', 'ruleId']
+        itemDictIterable = dataSource.itemDictIterable(variableNameList)
+
+        for _ in range(1000):
+            itemDictIterable = itemDictIterable.filterByVariable('hostName',
+                                                                 set([u"1.1.1.1"]),
+                                                                 negate = True)
+            itemDictIterable = itemDictIterable.filterByVariable('requestFileName',
+                                                                 set([u"/agilefant/static/js/jquery.hotkeys.js"]),
+                                                                 negate = True)
+        self.assertEqual(56, len(itemDictIterable))
 
     def _fillUpDataSource(self):
         iterable = ModsecurityAuditLogParser().parseStream(self._stream)

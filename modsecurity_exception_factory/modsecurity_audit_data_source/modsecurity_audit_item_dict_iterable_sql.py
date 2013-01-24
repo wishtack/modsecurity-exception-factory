@@ -8,14 +8,14 @@
 #
 
 from contracts import contract, new_contract
-from modsecurity_exception_factory.correlation.i_item_iterable import \
-    IItemIterable
+from modsecurity_exception_factory.correlation.i_item_iterable import IItemIterable
 from modsecurity_exception_factory.modsecurity_audit_data_source.sql_modsecurity_audit_entry_message import \
     SQLModsecurityAuditEntryMessage
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.sql.expression import union, literal, desc, select, and_
 from sqlalchemy.sql.functions import count
 from synthetic.decorators import synthesizeMember, synthesizeConstructor
+import copy
 
 new_contract('sessionmaker', sessionmaker)
 
@@ -30,19 +30,20 @@ class ModsecurityAuditItemDictIterableSQL(IItemIterable):
     _VARIABLE_VALUE_COUNT_KEY = 'variableValueCountKey'
 
     @contract
-    def __init__(self, sessionMaker, variableNameList, distinct = False, filterList = None):
+    def __init__(self, sessionMaker, variableNameList, distinct = False, filterDict = None):
         """
     :type sessionMaker: sessionmaker
     :type variableNameList: list(str)
     :type distinct: bool
+    :type filterDict: dict|None
 """
-        if filterList is None:
-            filterList = []
+        if filterDict is None:
+            filterDict = {}
 
         self._sessionMaker = sessionMaker
         self._variableNameList = variableNameList
         self._distinct = distinct
-        self._filterList = filterList
+        self._filterDict = filterDict
 
     def __iter__(self):
         return _ModsecurityAuditItemDictIteratorSQL(self._generator())
@@ -55,18 +56,27 @@ class ModsecurityAuditItemDictIterableSQL(IItemIterable):
         return ModsecurityAuditItemDictIterableSQL(self._sessionMaker,
                                                    self._variableNameList,
                                                    distinct = True,
-                                                   filterList = self._filterList)
+                                                   filterDict = self._filterDict)
 
     @contract
-    def filter(self, conditionDict, negate = False):
+    def filterByVariable(self, variableName, variableValueSet, negate = False):
         """
-    :type conditionDict: dict(str: list(unicode))
+    :type variableName: str
+    :type negate: bool
 """ 
-        filterObject = _Filter(conditionDict, negate)
+        filterDict = copy.deepcopy(self._filterDict)
+
+        key = (variableName, negate)
+        if key in filterDict:
+            filterDict[key].extendVariableValueSet(variableValueSet)
+        else:
+            filterObject = _Filter(variableName, variableValueSet, negate)
+            filterDict[key] = filterObject
+
         return ModsecurityAuditItemDictIterableSQL(self._sessionMaker,
                                                    self._variableNameList,
                                                    distinct = self._distinct,
-                                                   filterList = self._filterList + [filterObject])
+                                                   filterDict = filterDict)
 
     @contract
     def mostFrequentVariableAndValue(self, variableNameList):
@@ -98,7 +108,7 @@ class ModsecurityAuditItemDictIterableSQL(IItemIterable):
             item = session.execute(query).fetchone()
             
             if item is not None:
-                return {self._VARIABLE_NAME_KEY: item.variableName, self._VARIABLE_VALUE_KEY: item.variableValue}
+                return {str(item.variableName): item.variableValue}
             else:
                 return None
 
@@ -118,7 +128,7 @@ class ModsecurityAuditItemDictIterableSQL(IItemIterable):
         query = session.query(*criterionList)
         
         # Add filters to the query.
-        for filterObject in self._filterList:
+        for filterObject in self._filterDict.values():
             sqlFilter = self._filterObjectToSQL(filterObject)
             
             # Apply filter.
@@ -131,19 +141,13 @@ class ModsecurityAuditItemDictIterableSQL(IItemIterable):
         return query
     
     def _filterObjectToSQL(self, filterObject):
-        conditionDict = filterObject.conditionDict()
+        variableName = filterObject.variableName()
+        variableValueSet = filterObject.variableValueSet()
         negate = filterObject.negate()
         
-        # Retrieve accepted or rejected values for each variable...
-        sqlSubFilterList = []
-        for variableName, variableValueList in conditionDict.items():
-            # ... make the 'in' filter...
-            variable = getattr(SQLModsecurityAuditEntryMessage, variableName)
-            sqlSubFilter = variable.in_(variableValueList)
-            sqlSubFilterList.append(sqlSubFilter)
-
-        # ... merge all sub filers ...
-        sqlFilter = and_(*sqlSubFilterList)
+        # Make the 'in' filter...
+        variable = getattr(SQLModsecurityAuditEntryMessage, variableName)
+        sqlFilter = variable.in_(variableValueSet)
 
         # ... reverse it if needed.
         if negate:
@@ -168,9 +172,11 @@ class _ModsecurityAuditItemDictIteratorSQL:
     def next(self):
         return self._generator.next()
 
-@synthesizeMember('conditionDict', contract = 'dict(str: list(unicode))')
+@synthesizeMember('variableName', contract = str)
+@synthesizeMember('variableValueSet', contract = 'set(unicode)')
 @synthesizeMember('negate', contract = bool, defaultValue = False)
 @synthesizeConstructor()
 class _Filter:
-    pass
+    def extendVariableValueSet(self, variableValueSet):
+        self._variableValueSet = self._variableValueSet.union(variableValueSet)
 

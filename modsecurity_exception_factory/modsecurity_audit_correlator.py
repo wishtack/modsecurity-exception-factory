@@ -7,8 +7,6 @@
 # $Id: $
 #
 
-from modsecurity_exception_factory.modsecurity_audit_data_source.modsecurity_audit_orange_data_table_factory import \
-    ModsecurityAuditOrangeDataTableFactory
 from modsecurity_exception_factory.orange_correlation_engine import OrangeCorrelationEngine
 
 class ModsecurityAuditCorrelator:
@@ -21,9 +19,6 @@ The dict keys are variables' names and the values are set objects containing var
 """
         variableNameList = ['hostName', 'requestFileName', 'payloadContainer', 'ruleId']
         
-        dataFactory = ModsecurityAuditOrangeDataTableFactory()
-        data = dataFactory.entryMessageData(dataSource, variableNameList)
-        
-        for correlationDict in OrangeCorrelationEngine(variableNameList).correlate(data,
+        for correlationDict in OrangeCorrelationEngine(variableNameList).correlate(dataSource,
                                                                                    minimumOccurrenceCountThreshold):
             yield correlationDict

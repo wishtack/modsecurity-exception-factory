@@ -23,5 +23,5 @@ class IItemIterable:
         raise NotImplementedError()
 
     @abstractmethod
-    def filter(self, conditionDict, negate = False):
+    def filterByVariable(self, variableName, variableNameSet, negate = False):
         raise NotImplementedError()

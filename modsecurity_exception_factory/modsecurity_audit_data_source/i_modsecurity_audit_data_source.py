@@ -22,5 +22,9 @@ class IModsecurityAuditDataSource(IItemDataSource):
         raise NotImplementedError()
 
     @abstractmethod
+    def itemDictIterable(self, variableNameList):
+        raise NotImplementedError()
+
+    @abstractmethod
     def orangeDataReader(self):
         raise NotImplementedError()

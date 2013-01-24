@@ -9,6 +9,8 @@
 
 from contracts import contract
 from contracts.main import new_contract
+from modsecurity_exception_factory.modsecurity_audit_data_source.modsecurity_audit_orange_data_table_factory import \
+    ModsecurityAuditOrangeDataTableFactory
 import Orange.data.filter
 import copy
 import itertools
@@ -29,15 +31,17 @@ class OrangeCorrelationEngine:
         self._variableNameList = variableNameList
     
     @contract
-    def correlate(self, data, minimumOccurrenceCountThreshold = 0):
+    def correlate(self, dataSource, minimumOccurrenceCountThreshold = 0):
         """Yields correlations as dict objects.
-The dict keys are variables' names and the values are set objects containing variables' values. 
-    :type data: OrangeDataTable
+The dict keys are variables' names and the values are set objects containing variables' values.
     :type minimumOccurrenceCountThreshold: int
 """
+        dataFactory = ModsecurityAuditOrangeDataTableFactory()
+        data = dataFactory.entryMessageData(dataSource, self._variableNameList)
+        
         if len(data) == 0:
             return
-        
+
         # Association.
         support = float(minimumOccurrenceCountThreshold) / len(data)
         ruleGroup = orange.AssociationRulesInducer(data, support = support, classification_rules = True)
@@ -65,38 +69,44 @@ The dict keys are variables' names and the values are set objects containing var
         #         'payloadContainer': ['ARGS:param'],
         #         'requestFileName': ['/c.php', '/d.php'],
         #         'ruleId': ['333333']}
-        for variableSetDict in self._correlationDictIterable(data, set(self._variableNameList)):
-            variableToRemoveBuffer = set()
-            for variableTuple in variableSetDict:
-                if isinstance(variableTuple, tuple):
-                    for variable in variableTuple:
-                        variableToRemoveBuffer.add(variable)
-            
-            for variable in variableToRemoveBuffer:
-                del variableSetDict[variable]
+        itemDictIterable = dataSource.itemDictIterable(self._variableNameList)
+        for variableSetDict in self._correlationDictIterable(itemDictIterable, set(self._variableNameList)):
             yield variableSetDict
 
-    def _correlationDictIterable(self, data, variableNameSet):
+    def _correlationDictIterable(self, itemDictIterable, variableNameSet):
         # This list contains correlation dicts that have to be merged.
         correlationDictToMergeList = []
 
-        rule = self._induce(data, variableNameSet)
-        while rule is not None:
+        if len(variableNameSet) == 1:
+            variableName = list(variableNameSet)[0]
+            variableValueSet = set()
+            
+            for itemDict in itemDictIterable:
+                variableValueSet.add(itemDict[variableName])
+            
+            yield {variableName: variableValueSet}
+            return
+
+        mostFrequentVariableNameAndValue = itemDictIterable.mostFrequentVariableAndValue(list(variableNameSet))
+        while mostFrequentVariableNameAndValue is not None:
+            variableName, variableValue = list(mostFrequentVariableNameAndValue.items())[0]
+            variableValueSet = set([variableValue])
+
             # Select data that matches rule.
-            matchingData = self._filterDataByRule(data, rule)
+            matchingItemDictIterable = itemDictIterable.filterByVariable(variableName, variableValueSet)
 
             # Data has already been consumed by other rules.
-            if len(matchingData) == 0:
+            if len(matchingItemDictIterable) == 0:
                 raise ImpossibleError()
             else:
                 # We remove the matched data from the data table.
-                data = self._filterDataByRule(data, rule, negate = True)
-
-            # Fill correlation dict with rule's variable values.
-            correlationDict = self._makeCorrelationDictWithRule(data.domain, rule, variableNameSet)
+                itemDictIterable = itemDictIterable.filterByVariable(variableName,
+                                                                     variableValueSet,
+                                                                     negate = True)
 
             # List of variables that still have to be defined.
-            remainingVariableNameSet = variableNameSet - self._ruleToVariableNameSet(data.domain, rule)
+            remainingVariableNameSet = variableNameSet - set([variableName])
+            correlationDict = {variableName: variableValueSet}
                         
             # No more variables to find, we don't have to go deeper...
             if len(remainingVariableNameSet) == 0:
@@ -104,13 +114,13 @@ The dict keys are variables' names and the values are set objects containing var
 
             # ... otherwise, we must continue...
             else:
-                iterable = self._correlationDictIterable(matchingData, remainingVariableNameSet)
+                iterable = self._correlationDictIterable(matchingItemDictIterable, remainingVariableNameSet)
                 firstSubCorrelationDict = None
                 
                 for index, subCorrelationDict in enumerate(iterable):
                     if index == 0:
                         firstSubCorrelationDict = subCorrelationDict
-                        rule = self._induce(data, variableNameSet)
+                        mostFrequentVariableNameAndValue = itemDictIterable.mostFrequentVariableAndValue(list(variableNameSet))
                         continue
                     
                     # More than one item has been yielded.
@@ -124,15 +134,24 @@ The dict keys are variables' names and the values are set objects containing var
                 if firstSubCorrelationDict is not None:
                     correlationDict = self._unionCorrelationDict([correlationDict, firstSubCorrelationDict])
                     correlationDictToMergeList.append(correlationDict)
-            
-            rule = self._induce(data, variableNameSet)
+            mostFrequentVariableNameAndValue = itemDictIterable.mostFrequentVariableAndValue(list(variableNameSet))
 
         # Merging correlations that can be merged.
         for mergedCorrelationDict in self._mergeCorrelationDictList(correlationDictToMergeList):
             yield mergedCorrelationDict
         
-        if len(data) > 0:
+        if len(itemDictIterable) > 0:
             raise ImpossibleError()
+
+    def _mostFrequentVariableValueSet(self, itemDictIterable, variableNameSet):
+        correlationDict = {}
+        mostFrequentVariableNameAndValue = itemDictIterable.mostFrequentVariableAndValue(list(variableNameSet))
+        if mostFrequentVariableNameAndValue is None:
+            return None
+        
+        for variableName, variableValue in mostFrequentVariableNameAndValue.items():
+            correlationDict[variableName] = set(variableValue)
+        return correlationDict
 
     def _induce(self, data, variableNameSet):
         ruleGroup = orange.AssociationRulesInducer(data, support = 0, classification_rules = True)
@@ -180,7 +199,6 @@ The dict keys are variables' names and the values are set objects containing var
                     continue
 
                 mergeAttributeList = self._makeMergeAttributeList(mergeAttributeList, mergedCorrelationDict, correlationDict)
-
                 if mergeAttributeList is not None:
                     mergedCorrelationDict = self._mergeCorrelationDict(mergeAttributeList,
                                                                        mergedCorrelationDict,
@@ -206,9 +224,9 @@ The dict keys are variables' names and the values are set objects containing var
         
         # If we have many different attributes we only merge them if they don't have multiple values.
         if (len(mergeAttributeList) > 1) \
-            and any(filter(lambda attribute: \
+            and any(map(lambda attribute: \
                                len(correlationDictFirst.get(attribute, set())) > 1 \
-                               or len(correlationDictFirst.get(attribute, set())) > 1,
+                               or len(correlationDictSecond.get(attribute, set())) > 1,
                       mergeAttributeList)):
             mergeAttributeList = None
 
