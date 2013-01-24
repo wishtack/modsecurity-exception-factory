@@ -12,7 +12,7 @@ from modsecurity_exception_factory.correlation.i_item_iterable import IItemItera
 from modsecurity_exception_factory.modsecurity_audit_data_source.sql_modsecurity_audit_entry_message import \
     SQLModsecurityAuditEntryMessage
 from sqlalchemy.orm.session import sessionmaker
-from sqlalchemy.sql.expression import union, literal, desc, select, and_
+from sqlalchemy.sql.expression import union, literal, desc
 from sqlalchemy.sql.functions import count
 from synthetic.decorators import synthesizeMember, synthesizeConstructor
 import copy

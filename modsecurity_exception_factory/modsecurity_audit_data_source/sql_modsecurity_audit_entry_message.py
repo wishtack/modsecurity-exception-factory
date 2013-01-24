@@ -13,8 +13,8 @@ from sqlalchemy import Column, Integer, String
 class SQLModsecurityAuditEntryMessage(SQLBase):
     __tablename__ = 'messages'
     
-    index = Column(Integer, primary_key=True)
-    hostName = Column(String)
-    requestFileName = Column(String)
-    payloadContainer = Column(String)
-    ruleId = Column(String)
+    index = Column(Integer, index = True, primary_key = True)
+    hostName = Column(String, index = True)
+    requestFileName = Column(String, index = True)
+    payloadContainer = Column(String, index = True)
+    ruleId = Column(String, index = True)

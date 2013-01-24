@@ -36,14 +36,9 @@ The dict keys are variables' names and the values are set objects containing var
         # This list contains correlation dicts that have to be merged.
         correlationDictToMergeList = []
 
+        # Merge all values when there's only one variable remaining.
         if len(variableNameSet) == 1:
-            variableName = list(variableNameSet)[0]
-            variableValueSet = set()
-            
-            for itemDict in itemDictIterable:
-                variableValueSet.add(itemDict[variableName])
-            
-            yield {variableName: variableValueSet}
+            yield self._makeCorrelationDictWithOneVariable(itemDictIterable, variableNameSet)
             return
 
         mostFrequentVariableNameAndValue = itemDictIterable.mostFrequentVariableAndValue(list(variableNameSet))
@@ -54,45 +49,26 @@ The dict keys are variables' names and the values are set objects containing var
             # Select data that matches rule.
             matchingItemDictIterable = itemDictIterable.filterByVariable(variableName, variableValueSet)
 
+            # We remove the matched data from the data table.
+            itemDictIterable = itemDictIterable.filterByVariable(variableName,
+                                                                 variableValueSet,
+                                                                 negate = True)
+
             # Data has already been consumed by other rules.
             if len(matchingItemDictIterable) == 0:
                 raise ImpossibleError()
-            else:
-                # We remove the matched data from the data table.
-                itemDictIterable = itemDictIterable.filterByVariable(variableName,
-                                                                     variableValueSet,
-                                                                     negate = True)
 
             # List of variables that still have to be defined.
             remainingVariableNameSet = variableNameSet - set([variableName])
-            correlationDict = {variableName: variableValueSet}
-                        
-            # No more variables to find, we don't have to go deeper...
-            if len(remainingVariableNameSet) == 0:
-                correlationDictToMergeList.append(correlationDict)
 
             # ... otherwise, we must continue...
-            else:
-                iterable = self._correlationDictIterable(matchingItemDictIterable, remainingVariableNameSet)
-                firstSubCorrelationDict = None
-                
-                for index, subCorrelationDict in enumerate(iterable):
-                    if index == 0:
-                        firstSubCorrelationDict = subCorrelationDict
-                        mostFrequentVariableNameAndValue = itemDictIterable.mostFrequentVariableAndValue(list(variableNameSet))
-                        continue
-                    
-                    # More than one item has been yielded.
-                    if index == 1:
-                        yield self._unionCorrelationDict([correlationDict, firstSubCorrelationDict])
-                        firstSubCorrelationDict = None
-
-                    yield self._unionCorrelationDict([correlationDict, subCorrelationDict])
-                
-                # Only one item was yielded.
-                if firstSubCorrelationDict is not None:
-                    correlationDict = self._unionCorrelationDict([correlationDict, firstSubCorrelationDict])
-                    correlationDictToMergeList.append(correlationDict)
+            subCorrelationDictIterable = self._correlationDictIterable(matchingItemDictIterable, remainingVariableNameSet)
+            
+            for subCorrelationDict in subCorrelationDictIterable:
+                # Add current variable to sub correlation dictionary. 
+                subCorrelationDict[variableName] = variableValueSet
+                correlationDictToMergeList.append(subCorrelationDict)
+            
             mostFrequentVariableNameAndValue = itemDictIterable.mostFrequentVariableAndValue(list(variableNameSet))
 
         # Merging correlations that can be merged.
@@ -111,6 +87,15 @@ The dict keys are variables' names and the values are set objects containing var
         for variableName, variableValue in mostFrequentVariableNameAndValue.items():
             correlationDict[variableName] = set(variableValue)
         return correlationDict
+
+    def _makeCorrelationDictWithOneVariable(self, itemDictIterable, variableNameSet):
+        variableName = list(variableNameSet)[0]
+        variableValueSet = set()
+        
+        for itemDict in itemDictIterable:
+            variableValueSet.add(itemDict[variableName])
+        
+        return {variableName: variableValueSet}
 
     def _mergeCorrelationDictList(self, correlationDictList):
 
