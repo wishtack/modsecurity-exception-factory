@@ -17,7 +17,6 @@ from sqlalchemy.sql.expression import union, literal, desc
 from sqlalchemy.sql.functions import count
 from synthetic.decorators import synthesizeMember, synthesizeConstructor
 import copy
-import re
 
 new_contract('sessionmaker', sessionmaker)
 
@@ -70,15 +69,9 @@ class ModsecurityAuditItemDictIterableSQL(IItemIterable):
         filterDict = copy.copy(self._filterDict)
 
         key = (variableName, negate)
-        if key in filterDict:
-            variableValueSet = filterDict[key].variableValueSet().copy()
-            variableValueSet.add(variableValue)
-        
-        else:
-            variableValueSet = set([variableValue])
-
         filterDict[key] = _Filter(variableName = variableName,
-                                  variableValueSet = variableValueSet,
+                                  variableValue = variableValue,
+                                  childFilter = filterDict.get(key, None),
                                   negate = negate)
 
         return ModsecurityAuditItemDictIterableSQL(self._sessionMaker,
@@ -150,12 +143,12 @@ class ModsecurityAuditItemDictIterableSQL(IItemIterable):
     
     def _filterObjectToSQL(self, filterObject):
         variableName = filterObject.variableName()
-        variableValueSet = filterObject.variableValueSet()
+        variableValueRegexString = filterObject.variableValueRegexString()
         negate = filterObject.negate()
         
         # Make the 'in' filter...
         variable = getattr(SQLModsecurityAuditEntryMessage, variableName)
-        sqlFilter = variable.op('REGEXP')('|'.join(variableValueSet))
+        sqlFilter = variable.op('REGEXP')(variableValueRegexString)
 
         # ... reverse it if needed.
         if negate:
@@ -181,8 +174,17 @@ class _ModsecurityAuditItemDictIteratorSQL:
         return self._generator.next()
 
 @synthesizeMember('variableName', contract = str)
-@synthesizeMember('variableValueSet', contract = 'set(unicode)')
+@synthesizeMember('variableValue', contract = 'unicode')
+@synthesizeMember('childFilter')
 @synthesizeMember('negate', contract = bool, defaultValue = False)
 @synthesizeConstructor()
 class _Filter:
-    pass
+
+    def variableValueRegexString(self):
+        variableValueList = []
+        filterObject = self
+        while filterObject is not None:
+            variableValueList.append(filterObject.variableValue())
+            filterObject = filterObject.childFilter()
+        return u"|".join(variableValueList)
+        

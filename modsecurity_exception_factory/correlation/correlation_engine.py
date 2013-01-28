@@ -41,8 +41,8 @@ The dict keys are variables' names and the values are set objects containing var
             yield self._makeCorrelationDictWithOneVariable(itemDictIterable, variableNameSet)
             return
 
-        mostFrequentVariableNameAndValue = itemDictIterable.mostFrequentVariableAndValue(list(variableNameSet))
-        while mostFrequentVariableNameAndValue is not None:
+        iterationFunction = lambda: itemDictIterable.mostFrequentVariableAndValue(list(variableNameSet))
+        for mostFrequentVariableNameAndValue in iter(iterationFunction, None):
             variableName, variableValue = list(mostFrequentVariableNameAndValue.items())[0]
 
             # Select data that matches rule.
@@ -67,8 +67,6 @@ The dict keys are variables' names and the values are set objects containing var
                 # Add current variable to sub correlation dictionary. 
                 subCorrelationDict[variableName] = set([variableValue])
                 correlationDictToMergeList.append(subCorrelationDict)
-            
-            mostFrequentVariableNameAndValue = itemDictIterable.mostFrequentVariableAndValue(list(variableNameSet))
 
         # Merging correlations that can be merged.
         for mergedCorrelationDict in self._mergeCorrelationDictList(correlationDictToMergeList):

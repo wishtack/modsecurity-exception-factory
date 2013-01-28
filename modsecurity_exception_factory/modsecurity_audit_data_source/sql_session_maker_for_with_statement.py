@@ -26,8 +26,8 @@ class WrapperForWithStatement:
         if self._exitMethod is not None:
             self._exitMethod(self._instance)
 
-def _reFunction(expr, item):
-    regex = re.compile(expr)
+def _reFunction(regexString, item):
+    regex = re.compile(regexString)
     return regex.match(item) is not None
 
 class SQLSessionMakerForWithStatement(sessionmaker):
