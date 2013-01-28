@@ -7,7 +7,6 @@
 # $Id: $
 #
 
-from Orange.data.sql import SQLReader, __PostgresQuirkFix as PostgresQuirkFix
 from contracts import contract, new_contract
 from modsecurity_exception_factory.modsecurity_audit_data_source.i_modsecurity_audit_data_source import \
     IModsecurityAuditDataSource
@@ -22,9 +21,6 @@ from modsecurity_exception_factory.modsecurity_audit_data_source.sql_session_mak
 from modsecurity_exception_factory.modsecurity_audit_entry import \
     ModsecurityAuditEntry
 from sqlalchemy.engine import create_engine
-from sqlalchemy.engine.url import make_url
-from sqlalchemy.sql.expression import distinct
-import sqlite3
 
 new_contract('ModsecurityAuditEntry', ModsecurityAuditEntry)
 new_contract('SQLModsecurityAuditEntryMessage', SQLModsecurityAuditEntryMessage)
@@ -63,37 +59,11 @@ class ModsecurityAuditDataSourceSQL(IModsecurityAuditDataSource):
         self._flushModsecurityAuditEntryMessageBuffer(sqlModsecurityAuditEntryMessageBuffer)
 
     @contract
-    def variableValueIterable(self, columnName):
-        """
-    :type columnName: str
-"""
-        if not self._columnExists(columnName):
-            return
-        
-        with self._sessionMaker() as session:
-            for row in session.query(distinct(getattr(SQLModsecurityAuditEntryMessage, columnName))):
-                yield row[0]
-
-    @contract
     def itemDictIterable(self, variableNameList):
         """
     :type variableNameList: list(str)
 """
         return ModsecurityAuditItemDictIterableSQL(self._sessionMaker, variableNameList)
-
-    def orangeDataReader(self):        
-        reader = SQLReader()
-        
-        # @hack SQLReader's connect method doesn't parse sqlite urls correctly.
-        # It only handle file names instead of pathes (it should concatenate "host" and "path".        
-        url = make_url(self._dataBaseUrl)
-        if url.drivername == u"sqlite":
-            reader.conn = sqlite3.connect(url.database)
-            reader.quirks = PostgresQuirkFix(sqlite3)
-        else:
-            reader.connect(self._dataBaseUrl)
-        
-        return reader
 
     def _initializeDataBase(self):
         if self._initialized:

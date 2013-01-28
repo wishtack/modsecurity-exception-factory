@@ -8,7 +8,8 @@
 #
 
 from contracts import contract, new_contract
-from modsecurity_exception_factory.correlation.i_item_iterable import IItemIterable
+from modsecurity_exception_factory.correlation.i_item_iterable import \
+    IItemIterable
 from modsecurity_exception_factory.modsecurity_audit_data_source.sql_modsecurity_audit_entry_message import \
     SQLModsecurityAuditEntryMessage
 from sqlalchemy.orm.session import sessionmaker
@@ -16,6 +17,7 @@ from sqlalchemy.sql.expression import union, literal, desc
 from sqlalchemy.sql.functions import count
 from synthetic.decorators import synthesizeMember, synthesizeConstructor
 import copy
+import re
 
 new_contract('sessionmaker', sessionmaker)
 
@@ -59,19 +61,25 @@ class ModsecurityAuditItemDictIterableSQL(IItemIterable):
                                                    filterDict = self._filterDict)
 
     @contract
-    def filterByVariable(self, variableName, variableValueSet, negate = False):
+    def filterByVariable(self, variableName, variableValue, negate = False):
         """
     :type variableName: str
+    :type variableValue: unicode
     :type negate: bool
-""" 
-        filterDict = copy.deepcopy(self._filterDict)
+"""
+        filterDict = copy.copy(self._filterDict)
 
         key = (variableName, negate)
         if key in filterDict:
-            filterDict[key].extendVariableValueSet(variableValueSet)
+            variableValueSet = filterDict[key].variableValueSet().copy()
+            variableValueSet.add(variableValue)
+        
         else:
-            filterObject = _Filter(variableName, variableValueSet, negate)
-            filterDict[key] = filterObject
+            variableValueSet = set([variableValue])
+
+        filterDict[key] = _Filter(variableName = variableName,
+                                  variableValueSet = variableValueSet,
+                                  negate = negate)
 
         return ModsecurityAuditItemDictIterableSQL(self._sessionMaker,
                                                    self._variableNameList,
@@ -147,7 +155,7 @@ class ModsecurityAuditItemDictIterableSQL(IItemIterable):
         
         # Make the 'in' filter...
         variable = getattr(SQLModsecurityAuditEntryMessage, variableName)
-        sqlFilter = variable.in_(variableValueSet)
+        sqlFilter = variable.op('REGEXP')('|'.join(variableValueSet))
 
         # ... reverse it if needed.
         if negate:
@@ -177,6 +185,4 @@ class _ModsecurityAuditItemDictIteratorSQL:
 @synthesizeMember('negate', contract = bool, defaultValue = False)
 @synthesizeConstructor()
 class _Filter:
-    def extendVariableValueSet(self, variableValueSet):
-        self._variableValueSet = self._variableValueSet.union(variableValueSet)
-
+    pass

@@ -44,14 +44,13 @@ The dict keys are variables' names and the values are set objects containing var
         mostFrequentVariableNameAndValue = itemDictIterable.mostFrequentVariableAndValue(list(variableNameSet))
         while mostFrequentVariableNameAndValue is not None:
             variableName, variableValue = list(mostFrequentVariableNameAndValue.items())[0]
-            variableValueSet = set([variableValue])
 
             # Select data that matches rule.
-            matchingItemDictIterable = itemDictIterable.filterByVariable(variableName, variableValueSet)
+            matchingItemDictIterable = itemDictIterable.filterByVariable(variableName, variableValue)
 
             # We remove the matched data from the data table.
             itemDictIterable = itemDictIterable.filterByVariable(variableName,
-                                                                 variableValueSet,
+                                                                 variableValue,
                                                                  negate = True)
 
             # Data has already been consumed by other rules.
@@ -66,7 +65,7 @@ The dict keys are variables' names and the values are set objects containing var
             
             for subCorrelationDict in subCorrelationDictIterable:
                 # Add current variable to sub correlation dictionary. 
-                subCorrelationDict[variableName] = variableValueSet
+                subCorrelationDict[variableName] = set([variableValue])
                 correlationDictToMergeList.append(subCorrelationDict)
             
             mostFrequentVariableNameAndValue = itemDictIterable.mostFrequentVariableAndValue(list(variableNameSet))

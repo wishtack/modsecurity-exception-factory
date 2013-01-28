@@ -8,6 +8,7 @@
 #
 
 from sqlalchemy.orm.session import sessionmaker
+import re
 
 class WrapperForWithStatement:
     """This class makes it easy to use any object with python's 'with' statement."""
@@ -25,7 +26,12 @@ class WrapperForWithStatement:
         if self._exitMethod is not None:
             self._exitMethod(self._instance)
 
+def _reFunction(expr, item):
+    regex = re.compile(expr)
+    return regex.match(item) is not None
+
 class SQLSessionMakerForWithStatement(sessionmaker):
     def __call__(self, *args, **kwargs):
         session = super(SQLSessionMakerForWithStatement, self).__call__(*args, **kwargs)
+        session.connection().connection.create_function(u"REGEXP", 2, _reFunction)
         return WrapperForWithStatement(session, exitMethod = session.close.__func__)
