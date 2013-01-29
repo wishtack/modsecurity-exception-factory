@@ -56,6 +56,10 @@ Keep-Alive: timeout=15, max=99
 Connection: Keep-Alive
 
 --78c8cd2c-H--
+Message: Warning. Pattern match "..." at ARGS:a. [file "fake"] [line "fake"] [id "111111"] [rev "2.2.2"] [msg "fake"] [severity "CRITICAL"]
+Message: Warning. Pattern match "..." at ARGS:a. [file "fake"] [line "fake"] [id "222222"] [rev "2.2.2"] [msg "fake"] [severity "CRITICAL"]
+Message: Warning. Pattern match "..." at ARGS:b. [file "fake"] [line "fake"] [id "111111"] [rev "2.2.2"] [msg "fake"] [severity "CRITICAL"]
+Message: Warning. Pattern match "..." at ARGS:b. [file "fake"] [line "fake"] [id "222222"] [rev "2.2.2"] [msg "fake"] [severity "CRITICAL"]
 Message: Warning. Pattern match "^[\\d.:]+$" at REQUEST_HEADERS:Host. [file "/etc/modsecurity/rules/modsecurity_crs_21_protocol_anomalies.conf"] [line "98"] [id "960017"] [rev "2.2.2"] [msg "Host header is a numeric IP address"] [severity "CRITICAL"] [tag "PROTOCOL_VIOLATION/IP_HOST"] [tag "WASCTC/WASC-21"] [tag "OWASP_TOP_10/A7"] [tag "PCI/6.5.10"] [tag "http://technet.microsoft.com/en-us/magazine/2005.01.hackerbasher.aspx"]
 Message: Warning. Operator LT matched 5 at TX:anomaly_score. [file "/etc/modsecurity/rules/modsecurity_crs_49_inbound_blocking.conf"] [line "35"] [id "981174"] [msg "Inbound Anomaly Score (Total Score: 2, SQLi=, XSS=): Host header is a numeric IP address"] [data "1.1.1.1:8080'"]
 Message: Warning. Operator LT matched 5 at TX:inbound_anomaly_score. [file "/etc/modsecurity/rules/modsecurity_crs_60_correlation.conf"] [line "33"] [id "981203"] [msg "Inbound Anomaly Score (Total Inbound Score: 2, SQLi=, XSS=): Host header is a numeric IP address"]
