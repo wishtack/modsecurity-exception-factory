@@ -7,8 +7,7 @@
 # $Id: $
 #
 
-from contracts import contract
-from contracts.main import new_contract
+from contracts import contract, new_contract
 from modsecurity_exception_factory.modsecurity_audit_correlator import ModsecurityAuditCorrelator
 from modsecurity_exception_factory.modsecurity_audit_data_source.i_modsecurity_audit_data_source import \
     IModsecurityAuditDataSource
@@ -18,10 +17,9 @@ from modsecurity_exception_factory.modsecurity_audit_log_parser.modsecurity_audi
     ModsecurityAuditLogParser
 from pprint import pprint
 import argparse
+import contracts
 import io
 import sys
-
-import contracts
 
 new_contract('IModsecurityAuditDataSource', IModsecurityAuditDataSource)
 
@@ -57,8 +55,8 @@ class CommandModsecurityExceptionFactory:
             self._parseFile(argumentObject.modsecurityAuditLogPath, dataSource)
 
         # Correlate.
-        correlationList = list(ModsecurityAuditCorrelator().correlate(dataSource))
-        pprint(correlationList)
+        for correlationDict in ModsecurityAuditCorrelator().correlate(dataSource):
+            pprint(correlationDict)
     
         return 0
 
