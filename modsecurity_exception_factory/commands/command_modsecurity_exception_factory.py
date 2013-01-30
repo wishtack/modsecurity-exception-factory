@@ -21,11 +21,16 @@ import argparse
 import io
 import sys
 
+import contracts
+
 new_contract('IModsecurityAuditDataSource', IModsecurityAuditDataSource)
 
 class CommandModsecurityExceptionFactory:
     
     def main(self, argumentList):
+        # Disabling contracts solves some performance issues.
+        contracts.disable_all()
+
         argumentParser = argparse.ArgumentParser(description = u"Make ModSecurity exceptions.")
         argumentParser.add_argument(u"-i",
                                     u"--input",
