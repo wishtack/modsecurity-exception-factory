@@ -8,8 +8,7 @@
 #
 
 from contracts import contract, new_contract
-from modsecurity_exception_factory.correlation.i_item_iterable import \
-    IItemIterable
+from modsecurity_exception_factory.correlation.i_item_iterable import IItemIterable
 from modsecurity_exception_factory.modsecurity_audit_data_source.sql_modsecurity_audit_entry_message import \
     SQLModsecurityAuditEntryMessage
 from sqlalchemy.orm.session import sessionmaker
@@ -109,7 +108,9 @@ class ModsecurityAuditItemDictIterableSQL(IItemIterable):
             item = session.execute(query).fetchone()
             
             if item is not None:
-                return {str(item.variableName): item.variableValue}
+                # @hack: converting to unicode because the value might be None.
+                # @todo: manage None values.
+                return {str(item.variableName): unicode(item.variableValue)}
             else:
                 return None
 
@@ -143,12 +144,12 @@ class ModsecurityAuditItemDictIterableSQL(IItemIterable):
     
     def _filterObjectToSQL(self, filterObject):
         variableName = filterObject.variableName()
-        variableValueRegexString = filterObject.variableValueRegexString()
+        variableValueIterable = filterObject.variableValueIterable()
         negate = filterObject.negate()
         
         # Make the 'in' filter...
         variable = getattr(SQLModsecurityAuditEntryMessage, variableName)
-        sqlFilter = variable.op('REGEXP')(variableValueRegexString)
+        sqlFilter = variable.in_(variableValueIterable)
 
         # ... reverse it if needed.
         if negate:
@@ -180,11 +181,12 @@ class _ModsecurityAuditItemDictIteratorSQL:
 @synthesizeConstructor()
 class _Filter:
 
-    def variableValueRegexString(self):
-        variableValueList = []
+    def variableValueIterable(self):
+        for filterObject in self._selfAndChildrenIterable():
+            yield filterObject.variableValue()
+
+    def _selfAndChildrenIterable(self):
         filterObject = self
         while filterObject is not None:
-            variableValueList.append(filterObject.variableValue())
+            yield filterObject
             filterObject = filterObject.childFilter()
-        return u"|".join(variableValueList)
-        
