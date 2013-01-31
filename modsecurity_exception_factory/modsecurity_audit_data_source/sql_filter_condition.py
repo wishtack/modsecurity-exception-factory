@@ -12,10 +12,10 @@ from modsecurity_exception_factory.modsecurity_audit_data_source.sql_base import
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.types import Boolean
 
-class SQLFilterVariable(SQLBase):
-    __tablename__ = 'filter_variable'
+class SQLFilterCondition(SQLBase):
+    __tablename__ = 'filter_condition'
     
     id = Column(Integer, primary_key = True)
-    name = Column(String, index = True)
-    value = Column(String, index = True)
+    variableName = Column(String, index = True)
+    variableValue = Column(String, index = True)
     negate = Column(Boolean, index = True)
