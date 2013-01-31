@@ -8,6 +8,7 @@
 #
 
 from StringIO import StringIO
+from mock import patch
 from modsecurity_exception_factory.commands.command_modsecurity_exception_factory import \
     CommandModsecurityExceptionFactory
 from sqlalchemy.exc import OperationalError
@@ -17,7 +18,8 @@ import unittest
 
 class TestCommandModsecurityExceptionFactory(unittest.TestCase):
 
-    _EXPECTED_OUTPUT = """{'hostName': set([u'1.1.1.1']),
+    _EXPECTED_OUTPUT = """\
+{'hostName': set([u'1.1.1.1']),
  'requestFileName': set([u'/agilefant/ajax/iterationData.action',
                          u'/agilefant/ajax/myAssignmentsMenuData.action',
                          u'/agilefant/dailyWork.action',
@@ -223,26 +225,27 @@ class TestCommandModsecurityExceptionFactory(unittest.TestCase):
     def setUp(self):
         # Backup stdout.
         cleanUp()
-        self._stdout = sys.stdout
-        sys.stdout = StringIO()
     
     def tearDown(self):
         # Restore stdout.
-        sys.stdout = self._stdout
         cleanUp()
-    
+
+    @patch('sys.stdout', StringIO())
     def testOK(self):
         CommandModsecurityExceptionFactory().main([u"-i", MODSECURITY_AUDIT_LOG_SAMPLE_PATH,
                                                    u"-d", MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL])
         self.assertEqual(self._EXPECTED_OUTPUT, sys.stdout.getvalue())
 
+    @patch('sys.stdout', StringIO())
     def testDataSourceReuse(self):
         # This will create the data source.
         CommandModsecurityExceptionFactory().main([u"-i", MODSECURITY_AUDIT_LOG_SAMPLE_PATH,
                                                    u"-d", MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL])
 
-        # Reuse the data source.
+        # Reset the buffer.            
         sys.stdout = StringIO()
+                
+        # Reuse the data source.
         CommandModsecurityExceptionFactory().main([u"-d", MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL])
         self.assertEqual(self._EXPECTED_OUTPUT, sys.stdout.getvalue())
 
