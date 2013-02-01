@@ -4,7 +4,7 @@
 #
 # @author: Younes JAAIDI
 #
-# $Id: $
+# $Id$
 #
 
 from contracts import contract, new_contract
@@ -36,14 +36,14 @@ class CommandModsecurityExceptionFactory:
                                     dest = 'modsecurityAuditLogPath',
                                     type = unicode,
                                     default = None,
-                                    help = u"Modsecurity audit log file path.")
+                                    help = u"Modsecurity audit log file path or '-' to read from standard input.")
         argumentParser.add_argument(u"-d",
                                     u"--data-url",
                                     dest = 'dataURL',
                                     type = unicode,
                                     required = True,
                                     default = None,
-                                    help = u"Exemple: 'sqlite:////tmp/modsecurity-exception-factory.db'")
+                                    help = u"Example: 'sqlite:////tmp/modsecurity-exception-factory.db'")
     
         argumentObject = argumentParser.parse_args(argumentList)
             
@@ -66,9 +66,15 @@ class CommandModsecurityExceptionFactory:
     :type modsecurityAuditLogPath: unicode
     :type dataSource: IModsecurityAuditDataSource
 """
-        with io.open(modsecurityAuditLogPath, 'rt', errors = 'replace') as modsecAuditLogStream:
+        with self._stream(modsecurityAuditLogPath) as modsecAuditLogStream:
             iterable = ModsecurityAuditLogParser().parseStream(modsecAuditLogStream)
             dataSource.insertModsecurityAuditEntryIterable(iterable)
+    
+    def _stream(self, modsecurityAuditLogPath):
+        if modsecurityAuditLogPath == "-":
+            modsecurityAuditLogPath = sys.stdin.fileno()
+        
+        return io.open(modsecurityAuditLogPath, 'rt', errors = 'replace')
 
 def main():
     return CommandModsecurityExceptionFactory().main(sys.argv[1:])

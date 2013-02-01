@@ -4,18 +4,22 @@
 #
 # @author: Younes JAAIDI
 #
-# $Id: $
+# $Id$
 #
+
+from contracts import new_contract
 from modsecurity_exception_factory.modsecurity_audit_entry import ModsecurityAuditEntry
 from modsecurity_exception_factory.modsecurity_audit_log_parser.i_modsecurity_audit_log_section_parser import \
     IModsecurityAuditLogSectionParser
 from synthetic.decorators import synthesizeMember, synthesizeConstructor
 
-@synthesizeMember('currentLineString', contract = unicode)
-@synthesizeMember('currentSectionLineIndex', contract = int, defaultValue = 0)
-@synthesizeMember('currentSectionParser', contract = IModsecurityAuditLogSectionParser)
-@synthesizeMember('modsecurityAuditEntry', contract = ModsecurityAuditEntry)
-@synthesizeMember('reachedEntryStart', contract = bool)
+new_contract('IModsecurityAuditLogSectionParser', IModsecurityAuditLogSectionParser)
+
+@synthesizeMember('currentLineString', contract = 'unicode|None')
+@synthesizeMember('currentSectionLineIndex', contract = 'int|None', defaultValue = 0)
+@synthesizeMember('currentSectionParser', contract = 'IModsecurityAuditLogSectionParser|None')
+@synthesizeMember('modsecurityAuditEntry', contract = 'ModsecurityAuditEntry|None')
+@synthesizeMember('reachedEntryStart', contract = 'bool|None')
 @synthesizeConstructor()
 class ModsecurityAuditLogParserState:
     def incrementCurrentSectionLineIndex(self):

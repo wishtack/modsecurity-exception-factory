@@ -4,7 +4,7 @@
 #
 # @author: Younes JAAIDI
 #
-# $Id: $
+# $Id$
 #
 
 from contracts import new_contract, contract
@@ -13,10 +13,10 @@ from synthetic import synthesizeMember, synthesizeConstructor
 
 new_contract('ModsecurityAuditEntryMessage', ModsecurityAuditEntryMessage)
 
-@synthesizeMember('hostName', contract = unicode)
-@synthesizeMember('requestFileName', contract = unicode)
-@synthesizeMember('messageList', contract = 'list(ModsecurityAuditEntryMessage)')
-@synthesizeMember('inboundAnomalyScore', defaultValue = 0, contract = int)
+@synthesizeMember('hostName', contract = 'unicode|None')
+@synthesizeMember('requestFileName', contract = 'unicode|None')
+@synthesizeMember('messageList', contract = 'list(ModsecurityAuditEntryMessage)|None')
+@synthesizeMember('inboundAnomalyScore', contract = 'int|None', defaultValue = 0)
 @synthesizeConstructor()
 class ModsecurityAuditEntry:
     def __init__(self):
