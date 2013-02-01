@@ -9,7 +9,6 @@
 
 from contracts import contract
 import copy
-import itertools
 
 class ImpossibleError(Exception):
     def __init__(self):
@@ -29,29 +28,23 @@ The dict keys are variables' names and the values are set objects containing var
     :type minimumOccurrenceCountThreshold: int
 """
         itemDictIterable = dataSource.itemDictIterable(self._variableNameList)
+        itemDictIterable = itemDictIterable.distinct()
+        self._totalCount = len(itemDictIterable)
         for variableSetDict in self._correlationDictIterable(itemDictIterable, set(self._variableNameList)):
             yield variableSetDict
 
-    def _correlationDictIterable(self, itemDictIterable, variableNameSet):
-        # This list contains correlation dicts that have to be merged.
-        correlationDictToMergeList = []
-
+    def _correlationDictIterable(self, itemDictIterable, variableNameSet):        
         # Merge all values when there's only one variable remaining.
         if len(variableNameSet) == 1:
             yield self._makeCorrelationDictWithOneVariable(itemDictIterable, variableNameSet)
             return
 
-        iterationFunction = lambda: itemDictIterable.mostFrequentVariableAndValue(list(variableNameSet))
-        for mostFrequentVariableNameAndValue in iter(iterationFunction, None):
+        mostFrequentVariableNameAndValue = itemDictIterable.mostFrequentVariableAndValue(list(variableNameSet))
+        while mostFrequentVariableNameAndValue is not None:
             variableName, variableValue = list(mostFrequentVariableNameAndValue.items())[0]
 
             # Select data that matches rule.
             matchingItemDictIterable = itemDictIterable.filterByVariable(variableName, variableValue)
-
-            # We remove the matched data from the data table.
-            itemDictIterable = itemDictIterable.filterByVariable(variableName,
-                                                                 variableValue,
-                                                                 negate = True)
 
             # Data has already been consumed by other rules.
             if len(matchingItemDictIterable) == 0:
@@ -61,16 +54,22 @@ The dict keys are variables' names and the values are set objects containing var
             remainingVariableNameSet = variableNameSet - set([variableName])
 
             # ... otherwise, we must continue...
-            subCorrelationDictIterable = self._correlationDictIterable(matchingItemDictIterable, remainingVariableNameSet)
+            subCorrelationDictIterable = self._correlationDictIterable(matchingItemDictIterable,
+                                                                       remainingVariableNameSet)
+            subCorrelationDictIterable = self._mergeCorrelationDictIterable(subCorrelationDictIterable)
             
             for subCorrelationDict in subCorrelationDictIterable:
                 # Add current variable to sub correlation dictionary. 
                 subCorrelationDict[variableName] = set([variableValue])
-                correlationDictToMergeList.append(subCorrelationDict)
+                yield subCorrelationDict
+            
+            # We remove the matched data from the data table...
+            itemDictIterable = itemDictIterable.filterByVariable(variableName,
+                                                                 variableValue,
+                                                                 negate = True)
+            # ... and we loop again.
+            mostFrequentVariableNameAndValue = itemDictIterable.mostFrequentVariableAndValue(list(variableNameSet))
 
-        # Merging correlations that can be merged.
-        for mergedCorrelationDict in self._mergeCorrelationDictList(correlationDictToMergeList):
-            yield mergedCorrelationDict
         
         if len(itemDictIterable) > 0:
             raise ImpossibleError()
@@ -90,61 +89,49 @@ The dict keys are variables' names and the values are set objects containing var
         variableValueSet = set()
         
         for itemDict in itemDictIterable:
-            variableValueSet.add(itemDict[variableName])
+            # @hack: converting to unicode because the value might be None.
+            # @todo: manage None values.
+            variableValueSet.add(unicode(itemDict[variableName]))
         
         return {variableName: variableValueSet}
 
-    def _mergeCorrelationDictList(self, correlationDictList):
+    def _mergeCorrelationDictIterable(self, correlationDictList):
+        # @todo merge multiple attributes.
+        mergedCorrelationDict = None
+        
+        # Set of attributes that are used to make the current correlation merge.
+        mergeAttributeList = None
+        
+        for correlationDict in correlationDictList:
+            if mergedCorrelationDict is None:
+                mergedCorrelationDict = copy.deepcopy(correlationDict)
+                continue
 
-        def dictAsKey(correlationDict):
-            resultDict = {}
-            for key, valueSet in correlationDict.items():
-                if isinstance(key, str):
-                    resultDict[key] = ",".join(valueSet)
-            return resultDict
-
-        def keyListAsKey(correlationDict):
-            return list(correlationDict.keys())
-            
-        correlationDictList.sort(key = dictAsKey)
-        for _, group in itertools.groupby(correlationDictList, key = keyListAsKey):
-            # @todo merge multiple attributes.
-            mergedCorrelationDict = None
-            
-            # Set of attributes that are used to make the current correlation merge.
-            mergeAttributeList = None
-            
-            for correlationDict in group:
-                if mergedCorrelationDict is None:
-                    mergedCorrelationDict = copy.deepcopy(correlationDict)
-                    continue
-
-                mergeAttributeList = self._makeMergeAttributeList(mergeAttributeList, mergedCorrelationDict, correlationDict)
-                if mergeAttributeList is not None:
-                    mergedCorrelationDict = self._mergeCorrelationDict(mergeAttributeList,
-                                                                       mergedCorrelationDict,
-                                                                       correlationDict)
-                else:
-                    yield mergedCorrelationDict
-                    mergeAttributeList = None
-                    mergedCorrelationDict = copy.deepcopy(correlationDict)
-
-            if mergedCorrelationDict is not None:
+            mergeAttributeList = self._makeMergeAttributeList(mergeAttributeList, mergedCorrelationDict, correlationDict)
+            if mergeAttributeList is not None:
+                mergedCorrelationDict = self._mergeCorrelationDict(mergeAttributeList,
+                                                                   mergedCorrelationDict,
+                                                                   correlationDict)
+            else:
                 yield mergedCorrelationDict
+                mergeAttributeList = None
+                mergedCorrelationDict = copy.deepcopy(correlationDict)
+
+        if mergedCorrelationDict is not None:
+            yield mergedCorrelationDict
 
     def _makeMergeAttributeList(self, currentMergeAttributeList, correlationDictFirst, correlationDictSecond):
         """Return the set of attributes to merge or None if impossible to merge."""
         # Compare currently merged correlation and the new one.
-        differentAttributeList = self._differentAttributeList(correlationDictFirst, correlationDictSecond)    
-            
-        if len(differentAttributeList) == 0:
-            raise ImpossibleError()
-
-        mergeAttributeList = differentAttributeList
+        mergeAttributeList = self._differentAttributeList(correlationDictFirst, correlationDictSecond)
         mergeAttributeList.sort()
+
+        if len(mergeAttributeList) == 0:
+            mergeAttributeList = None
         
         # If we have many different attributes we only merge them if they don't have multiple values.
-        if (len(mergeAttributeList) > 1) \
+        if mergeAttributeList is not None \
+            and len(mergeAttributeList) > 1 \
             and any(map(lambda attribute: \
                                len(correlationDictFirst.get(attribute, set())) > 1 \
                                or len(correlationDictSecond.get(attribute, set())) > 1,
@@ -198,12 +185,12 @@ The dict keys are variables' names and the values are set objects containing var
         return mergedCorrelationDict
 
     def _differentAttributeList(self, correlationDictFirst, correlationDictSecond):
-        differentAttributeSet = set()
+        differentAttributeList = []
         for key in self._correlationDictSimpleKeyIterable(correlationDictSecond):
             if correlationDictFirst.get(key, None) != correlationDictSecond[key]:
-                differentAttributeSet.add(key)
+                differentAttributeList.append(key)
 
-        return list(differentAttributeSet)
+        return differentAttributeList
 
     def _correlationDictSimpleKeyIterable(self, correlationDict):
         return filter(lambda key: isinstance(key, str), correlationDict)

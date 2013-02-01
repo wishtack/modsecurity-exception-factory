@@ -7,8 +7,7 @@
 # $Id: $
 #
 
-from contracts import contract
-from contracts.main import new_contract
+from contracts import contract, new_contract
 from modsecurity_exception_factory.modsecurity_audit_correlator import ModsecurityAuditCorrelator
 from modsecurity_exception_factory.modsecurity_audit_data_source.i_modsecurity_audit_data_source import \
     IModsecurityAuditDataSource
@@ -18,6 +17,7 @@ from modsecurity_exception_factory.modsecurity_audit_log_parser.modsecurity_audi
     ModsecurityAuditLogParser
 from pprint import pprint
 import argparse
+import contracts
 import io
 import sys
 
@@ -26,6 +26,9 @@ new_contract('IModsecurityAuditDataSource', IModsecurityAuditDataSource)
 class CommandModsecurityExceptionFactory:
     
     def main(self, argumentList):
+        # Disabling contracts solves some performance issues.
+        contracts.disable_all()
+
         argumentParser = argparse.ArgumentParser(description = u"Make ModSecurity exceptions.")
         argumentParser.add_argument(u"-i",
                                     u"--input",
@@ -52,8 +55,8 @@ class CommandModsecurityExceptionFactory:
             self._parseFile(argumentObject.modsecurityAuditLogPath, dataSource)
 
         # Correlate.
-        correlationList = list(ModsecurityAuditCorrelator().correlate(dataSource))
-        pprint(correlationList)
+        for correlationDict in ModsecurityAuditCorrelator().correlate(dataSource):
+            pprint(correlationDict)
     
         return 0
 
