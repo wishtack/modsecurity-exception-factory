@@ -219,7 +219,11 @@ class TestModsecurityAuditCorrelationEngine(unittest.TestCase):
  {'hostName': set([u'test.domain.com']),
   'payloadContainer': set([u'TX:sqli_select_statement_count']),
   'requestFileName': set([u'/agilefant/static/js/backlogSelector.js']),
-  'ruleId': set([u'981317'])}]
+  'ruleId': set([u'981317'])},
+ {'hostName': set([None]),
+  'payloadContainer': set([u'ARGS:a', u'ARGS:b']),
+  'requestFileName': set([None, u'/agilefant/login.jsp']),
+  'ruleId': set([u'111111', u'222222'])}]
 
     def setUp(self):
         self._stream = io.open(MODSECURITY_AUDIT_LOG_SAMPLE_PATH, 'rt', errors = 'replace')

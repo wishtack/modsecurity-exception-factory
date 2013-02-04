@@ -89,9 +89,7 @@ The dict keys are variables' names and the values are set objects containing var
         variableValueSet = set()
         
         for itemDict in itemDictIterable:
-            # @hack: converting to unicode because the value might be None.
-            # @todo: manage None values.
-            variableValueSet.add(unicode(itemDict[variableName]))
+            variableValueSet.add(itemDict[variableName])
         
         return {variableName: variableValueSet}
 

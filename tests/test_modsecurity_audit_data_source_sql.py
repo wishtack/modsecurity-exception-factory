@@ -35,27 +35,32 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
 
     def testInsertModsecurityAuditEntryIterable(self):
         cursor = sqlite3.connect(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_FILE_PATH).cursor()
-        self.assertEqual(722, cursor.execute(u"SELECT count(*) FROM messages").fetchone()[0])
-        self.assertEqual((1, None, u'/agilefant/login.jsp', u'ARGS:a', u'111111'),
-                         cursor.execute(u"SELECT * FROM messages LIMIT 0, 1").fetchone())
-        self.assertEqual((8,
+        self.assertEqual(723, cursor.execute(u"SELECT count(*) FROM messages").fetchone()[0])
+        self.assertEqual((5, None, u'/agilefant/login.jsp', u'ARGS:a', u'111111'),
+                         cursor.execute(u"SELECT * FROM messages LIMIT 4, 1").fetchone())
+        self.assertEqual((9,
                           u"test.domain.com",
                           u"/agilefant/login.jsp",
                           u"ARGS:a",
                           u"111111"),
-                         cursor.execute(u"SELECT * FROM messages LIMIT 7, 1").fetchone())
+                         cursor.execute(u"SELECT * FROM messages LIMIT 8, 1").fetchone())
 
     def testModsecurityEntryMessageIterable(self):
-        self.assertEqual(722, len(self._itemDictIterableOriginal))
+        self.assertEqual(723, len(self._itemDictIterableOriginal))
         
         # Checking some items values.
         itemDictList = list(self._itemDictIterableOriginal)
-        message = itemDictList[67]
+        message = itemDictList[4]
+        self.assertEqual(None, message['hostName'])
+        self.assertEqual(u"/agilefant/login.jsp", message['requestFileName'])
+        self.assertEqual(u"ARGS:a", message['payloadContainer'])
+        self.assertEqual(u"111111", message['ruleId'])
+        message = itemDictList[68]
         self.assertEqual(u"1.1.1.1", message['hostName'])
         self.assertEqual(u"/agilefant/static/js/jquery.jstree.js", message['requestFileName'])
         self.assertEqual(u"TX:anomaly_score", message['payloadContainer'])
         self.assertEqual(u"981174", message['ruleId'])
-        message = itemDictList[99]
+        message = itemDictList[100]
         self.assertEqual(u"1.1.1.1", message['hostName'])
         self.assertEqual(u"/agilefant/static/js/dynamics/controller/MenuController.js", message['requestFileName'])
         self.assertEqual(u"REQUEST_HEADERS:Host", message['payloadContainer'])
@@ -64,17 +69,22 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
     def testModsecurityEntryMessageIterableDistinct(self):
         itemDictDistinctIterable = self._itemDictIterableOriginal.distinct()
 
-        self.assertEqual(544, len(itemDictDistinctIterable))
-        self.assertEqual(722, len(self._itemDictIterableOriginal))
+        self.assertEqual(545, len(itemDictDistinctIterable))
+        self.assertEqual(723, len(self._itemDictIterableOriginal))
         
         # Checking some item values.
         itemDictDistinctList = list(itemDictDistinctIterable)
-        message = itemDictDistinctList[67]
+        message = itemDictDistinctList[4]
+        self.assertEqual(None, message['hostName'])
+        self.assertEqual(u"/agilefant/login.jsp", message['requestFileName'])
+        self.assertEqual(u"ARGS:a", message['payloadContainer'])
+        self.assertEqual(u"111111", message['ruleId'])
+        message = itemDictDistinctList[68]
         self.assertEqual(u"1.1.1.1", message['hostName'])
         self.assertEqual(u"/agilefant/static/js/jquery.autoSuggest.minified.js", message['requestFileName'])
         self.assertEqual(u"TX:anomaly_score", message['payloadContainer'])
         self.assertEqual(u"981174", message['ruleId'])
-        message = itemDictDistinctList[99]
+        message = itemDictDistinctList[100]
         self.assertEqual(u"1.1.1.1", message['hostName'])
         self.assertEqual(u"/agilefant/static/js/utils/ArrayUtils.js", message['requestFileName'])
         self.assertEqual(u"REQUEST_HEADERS:Host", message['payloadContainer'])
@@ -125,6 +135,14 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
                                                              negate = True)
         self.assertEqual(36, len(itemDictIterable))
 
+    def testFilterByVariableNull(self):
+        itemDictIterable = self._itemDictIterableOriginal.filterByVariable('hostName', None)
+        self.assertEqual(8, len(itemDictIterable))
+
+    def testFilterByVariableReverseNull(self):
+        itemDictIterable = self._itemDictIterableOriginal.filterByVariable('hostName', None, negate = True)
+        self.assertEqual(715, len(itemDictIterable))
+
     def testDistinctWithFilter(self):
         # Testing that 'distinct' works with filters.
         itemDictIterable = self._itemDictIterableOriginal.filterByVariable('hostName',
@@ -157,7 +175,7 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
             itemDictIterable = itemDictIterable.filterByVariable('hostName',
                                                                  unicode(i),
                                                                  negate = True)
-        self.assertEqual(715, len(itemDictIterable))
+        self.assertEqual(723, len(itemDictIterable))
 
     def _fillUpDataSource(self):
         iterable = ModsecurityAuditLogParser().parseStream(self._stream)

@@ -27,21 +27,22 @@ class TestModsecurityAuditLogParser(unittest.TestCase):
         entryList = list(parser.parseStream(self._stream))
         
         # Checking entries count.
-        self.assertEqual(237, len(entryList))
+        self.assertEqual(238, len(entryList))
         
         # Checking host name.
         self.assertEqual(18, self._filterEntryListAndCountByPredicate(entryList, 'hostName', u"test.domain.com"))
         self.assertEqual(218, self._filterEntryListAndCountByPredicate(entryList, 'hostName', u"1.1.1.1"))
+        self.assertEqual(2, self._filterEntryListAndCountByPredicate(entryList, 'hostName', None))
 
         # Checking inbound anomaly score.
         self.assertEqual(3, self._filterEntryListAndCountByPredicate(entryList,
                                                                      'requestFileName',
                                                                      u"/agilefant/ajax/iterationData.action"))
         
-        self.assertEqual(1, self._filterEntryListAndCountByPredicate(entryList,
+        self.assertEqual(3, self._filterEntryListAndCountByPredicate(entryList,
                                                                      'inboundAnomalyScore',
-                                                                     0)) # The last incomplete entry.
-        self.assertEqual(230, self._filterEntryListAndCountByPredicate(entryList,
+                                                                     0)) # The last incomplete entry + the two first custom ones.
+        self.assertEqual(229, self._filterEntryListAndCountByPredicate(entryList,
                                                                        'inboundAnomalyScore',
                                                                        2))
         self.assertEqual(6, self._filterEntryListAndCountByPredicate(entryList,

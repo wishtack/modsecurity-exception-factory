@@ -8,7 +8,6 @@
 #
 
 from contracts import contract, new_contract
-from itertools import imap
 from modsecurity_exception_factory.correlation.i_item_iterable import \
     IItemIterable
 from modsecurity_exception_factory.modsecurity_audit_data_source.sql_filter import \
@@ -18,7 +17,7 @@ from modsecurity_exception_factory.modsecurity_audit_data_source.sql_filter_cond
 from modsecurity_exception_factory.modsecurity_audit_data_source.sql_modsecurity_audit_entry_message import \
     SQLModsecurityAuditEntryMessage
 from sqlalchemy.orm.session import sessionmaker
-from sqlalchemy.sql.expression import union, literal, desc, not_, and_
+from sqlalchemy.sql.expression import union, literal, desc, not_, and_, or_
 from sqlalchemy.sql.functions import count
 from synthetic.decorators import synthesizeMember, synthesizeConstructor
 import copy
@@ -71,7 +70,7 @@ class ModsecurityAuditItemDictIterableSQL(IItemIterable):
     def filterByVariable(self, variableName, variableValue, negate = False):
         """
     :type variableName: str
-    :type variableValue: unicode
+    :type variableValue: unicode|None
     :type negate: bool
 """
 
@@ -127,9 +126,7 @@ class ModsecurityAuditItemDictIterableSQL(IItemIterable):
             item = session.execute(query).fetchone()
             
             if item is not None:
-                # @hack: converting to unicode because the value might be None.
-                # @todo: manage None values.
-                return {str(item.variableName): unicode(item.variableValue)}
+                return {str(item.variableName): item.variableValue}
             else:
                 return None
 
@@ -182,16 +179,32 @@ class ModsecurityAuditItemDictIterableSQL(IItemIterable):
             if negate:
                 with self._sessionMaker() as session:
                     # Now we store the filter and it's variables in the database before using them through sub queries.
-                    sqlFilter = SQLFilter(conditionList = sqlFilterConditionList)
-                    session.add(sqlFilter)
+                    sqlFilterObject = SQLFilter(conditionList = sqlFilterConditionList)
+                    session.add(sqlFilterObject)
                     session.commit()
     
                     # Crawling group items.
+                    
                     # @hack: why is this line necessary ?
-                    sqlFilter = session.query(SQLFilter).filter(SQLFilter.id == sqlFilter.id).one()
+                    sqlFilterObject = session.query(SQLFilter).filter(SQLFilter.id == sqlFilterObject.id).one()
+                    
+                    # Making a 'NOT IN' filter with not null values.
                     sqlFilterVariableValueIterable = session.query(SQLFilterCondition.variableValue)\
-                                                       .with_parent(sqlFilter)
-                    queryFilterList.append(not_(variable.in_(sqlFilterVariableValueIterable)))
+                                                            .with_parent(sqlFilterObject)\
+                                                            .filter(SQLFilterCondition.variableValue != None)
+                    queryFilter = not_(variable.in_(sqlFilterVariableValueIterable))
+                    
+                    # @hack: managing NULL values as they are ignored by 'IN' and 'NOT IN'.
+                    # Making a 'IS NOT NULL' filter if there's a null value.
+                    if session.query(SQLFilterCondition.variableValue)\
+                              .with_parent(sqlFilterObject)\
+                              .filter(SQLFilterCondition.variableValue == None)\
+                              .count() > 0:
+                        queryFilter = and_(queryFilter, variable != None)
+                    else:
+                        queryFilter = or_(queryFilter, variable == None)
+                    queryFilterList.append(queryFilter)
+                    
 
             # We create a filter for each value if it's an equality condition.
             else:
