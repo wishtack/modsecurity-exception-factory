@@ -35,48 +35,50 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
 
     def testInsertModsecurityAuditEntryIterable(self):
         cursor = sqlite3.connect(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_FILE_PATH).cursor()
-        self.assertEqual(715, cursor.execute(u"SELECT count(*) FROM messages").fetchone()[0])
-        self.assertEqual((1,
+        self.assertEqual(722, cursor.execute(u"SELECT count(*) FROM messages").fetchone()[0])
+        self.assertEqual((1, None, u'/agilefant/login.jsp', u'ARGS:a', u'111111'),
+                         cursor.execute(u"SELECT * FROM messages LIMIT 0, 1").fetchone())
+        self.assertEqual((8,
                           u"test.domain.com",
                           u"/agilefant/login.jsp",
                           u"ARGS:a",
                           u"111111"),
-                         cursor.execute(u"SELECT * FROM messages LIMIT 1").fetchone())
+                         cursor.execute(u"SELECT * FROM messages LIMIT 7, 1").fetchone())
 
     def testModsecurityEntryMessageIterable(self):
-        self.assertEqual(715, len(self._itemDictIterableOriginal))
+        self.assertEqual(722, len(self._itemDictIterableOriginal))
         
         # Checking some items values.
         itemDictList = list(self._itemDictIterableOriginal)
         message = itemDictList[67]
         self.assertEqual(u"1.1.1.1", message['hostName'])
-        self.assertEqual(u"/agilefant/static/js/jquery.autoSuggest.minified.js", message['requestFileName'])
-        self.assertEqual(u"TX:inbound_anomaly_score", message['payloadContainer'])
-        self.assertEqual(u"981203", message['ruleId'])
-        message = itemDictList[99]
-        self.assertEqual(u"1.1.1.1", message['hostName'])
-        self.assertEqual(u"/agilefant/static/js/utils/ArrayUtils.js", message['requestFileName'])
+        self.assertEqual(u"/agilefant/static/js/jquery.jstree.js", message['requestFileName'])
         self.assertEqual(u"TX:anomaly_score", message['payloadContainer'])
         self.assertEqual(u"981174", message['ruleId'])
+        message = itemDictList[99]
+        self.assertEqual(u"1.1.1.1", message['hostName'])
+        self.assertEqual(u"/agilefant/static/js/dynamics/controller/MenuController.js", message['requestFileName'])
+        self.assertEqual(u"REQUEST_HEADERS:Host", message['payloadContainer'])
+        self.assertEqual(u"960017", message['ruleId'])
 
     def testModsecurityEntryMessageIterableDistinct(self):
         itemDictDistinctIterable = self._itemDictIterableOriginal.distinct()
 
-        self.assertEqual(537, len(itemDictDistinctIterable))
-        self.assertEqual(715, len(self._itemDictIterableOriginal))
+        self.assertEqual(544, len(itemDictDistinctIterable))
+        self.assertEqual(722, len(self._itemDictIterableOriginal))
         
         # Checking some item values.
         itemDictDistinctList = list(itemDictDistinctIterable)
         message = itemDictDistinctList[67]
         self.assertEqual(u"1.1.1.1", message['hostName'])
-        self.assertEqual(u"/agilefant/static/js/jquery.tagcloud.min.js", message['requestFileName'])
-        self.assertEqual(u"TX:inbound_anomaly_score", message['payloadContainer'])
-        self.assertEqual(u"981203", message['ruleId'])
-        message = itemDictDistinctList[99]
-        self.assertEqual(u"1.1.1.1", message['hostName'])
-        self.assertEqual(u"/agilefant/static/js/utils/Parsers.js", message['requestFileName'])
+        self.assertEqual(u"/agilefant/static/js/jquery.autoSuggest.minified.js", message['requestFileName'])
         self.assertEqual(u"TX:anomaly_score", message['payloadContainer'])
         self.assertEqual(u"981174", message['ruleId'])
+        message = itemDictDistinctList[99]
+        self.assertEqual(u"1.1.1.1", message['hostName'])
+        self.assertEqual(u"/agilefant/static/js/utils/ArrayUtils.js", message['requestFileName'])
+        self.assertEqual(u"REQUEST_HEADERS:Host", message['payloadContainer'])
+        self.assertEqual(u"960017", message['ruleId'])
 
     def testMostFrequentAttribute(self):
         self.assertEqual({'hostName': u'1.1.1.1'},

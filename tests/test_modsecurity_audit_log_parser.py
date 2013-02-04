@@ -4,7 +4,7 @@
 #
 # @author: Younes JAAIDI
 #
-# $Id: $
+# $Id$
 #
 
 from modsecurity_exception_factory.modsecurity_audit_log_parser import ModsecurityAuditLogParser
@@ -27,7 +27,7 @@ class TestModsecurityAuditLogParser(unittest.TestCase):
         entryList = list(parser.parseStream(self._stream))
         
         # Checking entries count.
-        self.assertEqual(236, len(entryList))
+        self.assertEqual(237, len(entryList))
         
         # Checking host name.
         self.assertEqual(18, self._filterEntryListAndCountByPredicate(entryList, 'hostName', u"test.domain.com"))
@@ -41,7 +41,7 @@ class TestModsecurityAuditLogParser(unittest.TestCase):
         self.assertEqual(1, self._filterEntryListAndCountByPredicate(entryList,
                                                                      'inboundAnomalyScore',
                                                                      0)) # The last incomplete entry.
-        self.assertEqual(229, self._filterEntryListAndCountByPredicate(entryList,
+        self.assertEqual(230, self._filterEntryListAndCountByPredicate(entryList,
                                                                        'inboundAnomalyScore',
                                                                        2))
         self.assertEqual(6, self._filterEntryListAndCountByPredicate(entryList,
