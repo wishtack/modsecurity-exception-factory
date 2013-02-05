@@ -4,10 +4,10 @@
 #
 # @author: Younes JAAIDI
 #
-# $Id: $
+# $Id$
 #
 
-from modsecurity_exception_factory.correlation.correlation_engine import CorrelationEngine
+from .correlation import CorrelationEngine
 
 class ModsecurityAuditCorrelator:
     

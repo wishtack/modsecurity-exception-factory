@@ -7,8 +7,8 @@
 # $Id$
 #
 
+from .modsecurity_audit_entry_message import ModsecurityAuditEntryMessage
 from contracts import new_contract, contract
-from modsecurity_exception_factory.modsecurity_audit_entry_message import ModsecurityAuditEntryMessage
 from synthetic import synthesizeMember, synthesizeConstructor
 
 new_contract('ModsecurityAuditEntryMessage', ModsecurityAuditEntryMessage)

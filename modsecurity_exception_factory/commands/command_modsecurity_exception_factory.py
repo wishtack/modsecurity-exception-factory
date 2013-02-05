@@ -9,12 +9,8 @@
 
 from contracts import contract, new_contract
 from modsecurity_exception_factory.modsecurity_audit_correlator import ModsecurityAuditCorrelator
-from modsecurity_exception_factory.modsecurity_audit_data_source.i_modsecurity_audit_data_source import \
-    IModsecurityAuditDataSource
-from modsecurity_exception_factory.modsecurity_audit_data_source.modsecurity_audit_data_source_sql import \
-    ModsecurityAuditDataSourceSQL
-from modsecurity_exception_factory.modsecurity_audit_log_parser.modsecurity_audit_log_parser import \
-    ModsecurityAuditLogParser
+from modsecurity_exception_factory.modsecurity_audit_data_source import IModsecurityAuditDataSource, ModsecurityAuditDataSourceSQL
+from modsecurity_exception_factory.modsecurity_audit_log_parser import ModsecurityAuditLogParser
 from pprint import pprint
 import argparse
 import contracts

@@ -4,8 +4,9 @@
 #
 # @author: Younes JAAIDI
 #
-# $Id: $
+# $Id$
 #
+
 from abc import abstractmethod
 
 class IModsecurityAuditLogSectionParser:

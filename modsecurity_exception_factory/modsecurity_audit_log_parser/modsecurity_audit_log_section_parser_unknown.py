@@ -4,12 +4,11 @@
 #
 # @author: Younes JAAIDI
 #
-# $Id: $
+# $Id$
 #
 
 from contracts import contract
-from modsecurity_exception_factory.modsecurity_audit_log_parser.i_modsecurity_audit_log_section_parser import \
-    IModsecurityAuditLogSectionParser
+from .i_modsecurity_audit_log_section_parser import IModsecurityAuditLogSectionParser
 
 class ModsecurityAuditLogSectionParserUnknown(IModsecurityAuditLogSectionParser):
     @contract

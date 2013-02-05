@@ -4,17 +4,14 @@
 #
 # @author: Younes JAAIDI
 #
-# $Id: $
+# $Id$
 #
+
+from .modsecurity_audit_log_section_parser_a import ModsecurityAuditLogSectionParserA
+from .modsecurity_audit_log_section_parser_b import ModsecurityAuditLogSectionParserB
+from .modsecurity_audit_log_section_parser_h import ModsecurityAuditLogSectionParserH
+from .modsecurity_audit_log_section_parser_unknown import ModsecurityAuditLogSectionParserUnknown
 from contracts import contract
-from modsecurity_exception_factory.modsecurity_audit_log_parser.modsecurity_audit_log_section_parser_a import \
-    ModsecurityAuditLogSectionParserA
-from modsecurity_exception_factory.modsecurity_audit_log_parser.modsecurity_audit_log_section_parser_b import \
-    ModsecurityAuditLogSectionParserB
-from modsecurity_exception_factory.modsecurity_audit_log_parser.modsecurity_audit_log_section_parser_h import \
-    ModsecurityAuditLogSectionParserH
-from modsecurity_exception_factory.modsecurity_audit_log_parser.modsecurity_audit_log_section_parser_unknown import \
-    ModsecurityAuditLogSectionParserUnknown
 
 class ModsecurityAuditEntrySectionParserFactory:
     

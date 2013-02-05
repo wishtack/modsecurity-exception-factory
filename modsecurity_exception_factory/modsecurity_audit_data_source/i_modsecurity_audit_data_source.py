@@ -4,12 +4,11 @@
 #
 # @author: Younes JAAIDI
 #
-# $Id: $
+# $Id$
 #
 
 from abc import abstractmethod
-from modsecurity_exception_factory.correlation.i_item_data_source import \
-    IItemDataSource
+from ..correlation import IItemDataSource
 
 class IModsecurityAuditDataSource(IItemDataSource):
     

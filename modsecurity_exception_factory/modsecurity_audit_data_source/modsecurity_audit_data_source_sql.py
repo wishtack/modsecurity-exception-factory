@@ -4,22 +4,16 @@
 #
 # @author: Younes JAAIDI
 #
-# $Id: $
+# $Id$
 #
 
+from ..modsecurity_audit_entry import ModsecurityAuditEntry
+from .i_modsecurity_audit_data_source import IModsecurityAuditDataSource
+from .modsecurity_audit_item_dict_iterable_sql import ModsecurityAuditItemDictIterableSQL
+from .sql_base import SQLBase
+from .sql_modsecurity_audit_entry_message import SQLModsecurityAuditEntryMessage
+from .sql_session_maker_for_with_statement import SQLSessionMakerForWithStatement
 from contracts import contract, new_contract
-from modsecurity_exception_factory.modsecurity_audit_data_source.i_modsecurity_audit_data_source import \
-    IModsecurityAuditDataSource
-from modsecurity_exception_factory.modsecurity_audit_data_source.modsecurity_audit_item_dict_iterable_sql import \
-    ModsecurityAuditItemDictIterableSQL
-from modsecurity_exception_factory.modsecurity_audit_data_source.sql_base import \
-    SQLBase
-from modsecurity_exception_factory.modsecurity_audit_data_source.sql_modsecurity_audit_entry_message import \
-    SQLModsecurityAuditEntryMessage
-from modsecurity_exception_factory.modsecurity_audit_data_source.sql_session_maker_for_with_statement import \
-    SQLSessionMakerForWithStatement
-from modsecurity_exception_factory.modsecurity_audit_entry import \
-    ModsecurityAuditEntry
 from sqlalchemy.engine import create_engine
 
 new_contract('ModsecurityAuditEntry', ModsecurityAuditEntry)

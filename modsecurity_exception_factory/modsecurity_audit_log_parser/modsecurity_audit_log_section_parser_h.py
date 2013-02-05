@@ -4,15 +4,13 @@
 #
 # @author: Younes JAAIDI
 #
-# $Id: $
+# $Id$
 #
 
+from ..modsecurity_audit_entry_message import ModsecurityAuditEntryMessage
+from .i_modsecurity_audit_log_section_parser import IModsecurityAuditLogSectionParser
+from .modsecurity_audit_log_parser_state import ModsecurityAuditLogParserState
 from contracts import contract, new_contract
-from modsecurity_exception_factory.modsecurity_audit_entry_message import ModsecurityAuditEntryMessage
-from modsecurity_exception_factory.modsecurity_audit_log_parser.i_modsecurity_audit_log_section_parser import \
-    IModsecurityAuditLogSectionParser
-from modsecurity_exception_factory.modsecurity_audit_log_parser.modsecurity_audit_log_parser_state import \
-    ModsecurityAuditLogParserState
 import re
 
 new_contract('ModsecurityAuditLogParserState', ModsecurityAuditLogParserState)

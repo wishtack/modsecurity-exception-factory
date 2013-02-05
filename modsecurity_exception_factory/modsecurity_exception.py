@@ -4,10 +4,10 @@
 #
 # @author: Younes JAAIDI
 #
-# $Id: $
+# $Id$
 #
-from synthetic.decorators import synthesizeMember
 
+from synthetic.decorators import synthesizeMember
 
 @synthesizeMember('hostNameList', 'list(unicode)')
 @synthesizeMember('requestNameList', 'list(unicode)')
