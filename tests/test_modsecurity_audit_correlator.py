@@ -225,20 +225,68 @@ class TestModsecurityAuditCorrelationEngine(unittest.TestCase):
   'requestFileName': set([None, u'/agilefant/login.jsp']),
   'ruleId': set([u'111111', u'222222'])}]
 
+    _EXPECTED_CORRELATION_LIST_WITH_IGNORED_VARIABLE_DICT = \
+[{'hostName': set([u'test.domain.com']),
+  'requestFileName': set([u'/agilefant/editIteration.action',
+                          u'/agilefant/login.jsp',
+                          u'/agilefant/static/css/main.css',
+                          u'/agilefant/static/img/agilefant-logo-80px.png',
+                          u'/agilefant/static/img/login_gradient.png',
+                          u'/agilefant/static/img/ui/ui-bg_gloss-wave_55_5c9ccc_500x100.png',
+                          u'/agilefant/static/img/ui/ui-bg_inset-hard_100_fcfdfd_1x100.png',
+                          u'/agilefant/static/js/backlogChooser.js',
+                          u'/agilefant/static/js/backlogSelector.js',
+                          u'/agilefant/static/js/date.js',
+                          u'/agilefant/static/js/jquery-ui.min.js',
+                          u'/agilefant/static/js/jquery.cookie.js',
+                          u'/agilefant/static/js/jquery.dynatree.js',
+                          u'/agilefant/static/js/jquery.hotkeys.js',
+                          u'/agilefant/static/js/jquery.js',
+                          u'/agilefant/static/js/jquery.wysiwyg.js']),
+  ('payloadContainer', 'ruleId'): set([(u'REQUEST_HEADERS:Host', u'960017'),
+                                       (u'TX:inbound_anomaly_score',
+                                        u'981203')])},
+ {'hostName': set([u'test.domain.com']),
+  'payloadContainer': set([u'ARGS:a', u'ARGS:b']),
+  'requestFileName': set([u'/agilefant/login.jsp']),
+  'ruleId': set([u'222222'])},
+ {'hostName': set([u'test.domain.com']),
+  'payloadContainer': set([u'TX:sqli_select_statement_count']),
+  'requestFileName': set([u'/agilefant/static/js/backlogSelector.js']),
+  'ruleId': set([u'981317'])},
+ {'hostName': set([None]),
+  'payloadContainer': set([u'ARGS:a', u'ARGS:b']),
+  'requestFileName': set([None, u'/agilefant/login.jsp']),
+  'ruleId': set([u'222222'])}]
+
     def setUp(self):
-        self._stream = io.open(MODSECURITY_AUDIT_LOG_SAMPLE_PATH, 'rt', errors = 'replace')
         cleanUp()
+        self._fillupDataSource()
     
     def tearDown(self):
-        self._stream.close()
         cleanUp()
+
+    def _fillupDataSource(self):
+        # Fillup database.
+        with io.open(MODSECURITY_AUDIT_LOG_SAMPLE_PATH, 'rt', errors = 'replace') as stream:
+            iterable = ModsecurityAuditLogParser().parseStream(stream)
+            dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
+            
+            dataSource.insertModsecurityAuditEntryIterable(iterable)
 
     def testCorrelate(self):
         # Fillup database.
-        iterable = ModsecurityAuditLogParser().parseStream(self._stream)
         dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
-        
-        dataSource.insertModsecurityAuditEntryIterable(iterable)
 
         correlationList = list(ModsecurityAuditCorrelator().correlate(dataSource))
         self.assertEqual(self._EXPECTED_CORRELATION_LIST, correlationList)
+
+    def testCorrelateWithIgnoredVariableDict(self):
+        # Fillup database.
+        dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
+        
+        ignoredVariableDict = {'hostName': [u"1.1.1.1"],
+                               'ruleId': [u"111111", u"981174"]}
+        
+        correlationList = list(ModsecurityAuditCorrelator().correlate(dataSource, ignoredVariableDict))
+        self.assertEqual(self._EXPECTED_CORRELATION_LIST_WITH_IGNORED_VARIABLE_DICT, correlationList)

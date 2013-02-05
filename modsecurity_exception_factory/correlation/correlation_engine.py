@@ -18,8 +18,14 @@ class CorrelationEngine:
     
     _EMPTY_ATTRIBUTE_VALUE = '~'
 
-    def __init__(self, variableNameList):
+    @contract
+    def __init__(self, variableNameList, ignoredVariableDict = {}):
+        """
+    :type variableNameList: list(str)
+    :type ignoredVariableDict: dict(str:list(unicode))
+"""
         self._variableNameList = variableNameList
+        self._ignoredVariableDict = ignoredVariableDict
     
     @contract
     def correlate(self, dataSource, minimumOccurrenceCountThreshold = 0):
@@ -28,10 +34,20 @@ The dict keys are variables' names and the values are set objects containing var
     :type minimumOccurrenceCountThreshold: int
 """
         itemDictIterable = dataSource.itemDictIterable(self._variableNameList)
+        
+        # Removing items matching 'ignoredVariableDict'.
+        itemDictIterable = self._removeItemsMatchingIgnoredVariableDict(itemDictIterable)
+        
         itemDictIterable = itemDictIterable.distinct()
         self._totalCount = len(itemDictIterable)
         for variableSetDict in self._correlationDictIterable(itemDictIterable, set(self._variableNameList)):
             yield variableSetDict
+
+    def _removeItemsMatchingIgnoredVariableDict(self, itemDictIterable):
+        for variableName, variableValueList in self._ignoredVariableDict.items():
+            for variableValue in variableValueList:
+                itemDictIterable = itemDictIterable.filterByVariable(variableName, variableValue, negate = True)
+        return itemDictIterable
 
     def _correlationDictIterable(self, itemDictIterable, variableNameSet):        
         # Merge all values when there's only one variable remaining.

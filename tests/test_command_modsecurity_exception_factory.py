@@ -12,11 +12,14 @@ from mock import patch
 from modsecurity_exception_factory.commands.command_modsecurity_exception_factory import \
     CommandModsecurityExceptionFactory
 from sqlalchemy.exc import OperationalError
-from tests.common import cleanUp, MODSECURITY_AUDIT_LOG_SAMPLE_PATH, MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL
+from tests.common import cleanUp, MODSECURITY_AUDIT_LOG_SAMPLE_PATH, \
+    MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL, testFilePath
 import sys
 import unittest
 
 class TestCommandModsecurityExceptionFactory(unittest.TestCase):
+
+    _TEST_CONFIG_FILE_PATH = testFilePath(u"data/test.yaml")
 
     _EXPECTED_OUTPUT = """\
 {'hostName': set([u'1.1.1.1']),
@@ -226,6 +229,34 @@ class TestCommandModsecurityExceptionFactory(unittest.TestCase):
  'ruleId': set([u'111111', u'222222'])}
 """
 
+    _EXPECTED_OUTPUT_WTTH_IGNORED_VARIABLE_DICT = """\
+{'hostName': set([u'test.domain.com']),
+ 'requestFileName': set([u'/agilefant/editIteration.action',
+                         u'/agilefant/login.jsp',
+                         u'/agilefant/static/css/main.css',
+                         u'/agilefant/static/img/agilefant-logo-80px.png',
+                         u'/agilefant/static/img/login_gradient.png',
+                         u'/agilefant/static/img/ui/ui-bg_gloss-wave_55_5c9ccc_500x100.png',
+                         u'/agilefant/static/img/ui/ui-bg_inset-hard_100_fcfdfd_1x100.png',
+                         u'/agilefant/static/js/backlogChooser.js',
+                         u'/agilefant/static/js/backlogSelector.js',
+                         u'/agilefant/static/js/date.js',
+                         u'/agilefant/static/js/jquery-ui.min.js',
+                         u'/agilefant/static/js/jquery.cookie.js',
+                         u'/agilefant/static/js/jquery.dynatree.js',
+                         u'/agilefant/static/js/jquery.hotkeys.js',
+                         u'/agilefant/static/js/jquery.js',
+                         u'/agilefant/static/js/jquery.wysiwyg.js']),
+ ('payloadContainer', 'ruleId'): set([(u'REQUEST_HEADERS:Host', u'960017'),
+                                      (u'TX:anomaly_score', u'981174'),
+                                      (u'TX:inbound_anomaly_score',
+                                       u'981203')])}
+{'hostName': set([u'test.domain.com']),
+ 'payloadContainer': set([u'TX:sqli_select_statement_count']),
+ 'requestFileName': set([u'/agilefant/static/js/backlogSelector.js']),
+ 'ruleId': set([u'981317'])}
+"""
+
     def setUp(self):
         # Backup stdout.
         cleanUp()
@@ -239,6 +270,13 @@ class TestCommandModsecurityExceptionFactory(unittest.TestCase):
         CommandModsecurityExceptionFactory().main([u"-i", MODSECURITY_AUDIT_LOG_SAMPLE_PATH,
                                                    u"-d", MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL])
         self.assertEqual(self._EXPECTED_OUTPUT, sys.stdout.getvalue())
+
+    @patch('sys.stdout', StringIO())
+    def testWithIgnoredVariableDict(self):
+        CommandModsecurityExceptionFactory().main([u"-i", MODSECURITY_AUDIT_LOG_SAMPLE_PATH,
+                                                   u"-d", MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL,
+                                                   u"-c", self._TEST_CONFIG_FILE_PATH])
+        self.assertEqual(self._EXPECTED_OUTPUT_WTTH_IGNORED_VARIABLE_DICT, sys.stdout.getvalue())
 
     @patch('sys.stdout', StringIO())
     def testDataSourceReuse(self):

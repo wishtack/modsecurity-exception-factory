@@ -8,9 +8,13 @@
 #
 
 from contracts import contract, new_contract
-from modsecurity_exception_factory.modsecurity_audit_correlator import ModsecurityAuditCorrelator
-from modsecurity_exception_factory.modsecurity_audit_data_source import IModsecurityAuditDataSource, ModsecurityAuditDataSourceSQL
-from modsecurity_exception_factory.modsecurity_audit_log_parser import ModsecurityAuditLogParser
+from modsecurity_exception_factory.config import Config
+from modsecurity_exception_factory.modsecurity_audit_correlator import \
+    ModsecurityAuditCorrelator
+from modsecurity_exception_factory.modsecurity_audit_data_source import \
+    IModsecurityAuditDataSource, ModsecurityAuditDataSourceSQL
+from modsecurity_exception_factory.modsecurity_audit_log_parser import \
+    ModsecurityAuditLogParser
 from pprint import pprint
 import argparse
 import contracts
@@ -40,9 +44,23 @@ class CommandModsecurityExceptionFactory:
                                     required = True,
                                     default = None,
                                     help = u"Example: 'sqlite:////tmp/modsecurity-exception-factory.db'")
+        argumentParser.add_argument(u"-c",
+                                    u"--config-file",
+                                    dest = 'configFilePath',
+                                    type = unicode,
+                                    default = None)
     
         argumentObject = argumentParser.parse_args(argumentList)
-            
+
+        # Parse config if given.
+        config = None
+        if argumentObject.configFilePath is not None:
+            config = Config(argumentObject.configFilePath)
+        
+        ignoredVariableDict = {}
+        if config is not None:
+            ignoredVariableDict = config.ingoredVariableDict()
+
         # Initialize data source object.
         dataSource = ModsecurityAuditDataSourceSQL(argumentObject.dataURL)
         
@@ -51,7 +69,7 @@ class CommandModsecurityExceptionFactory:
             self._parseFile(argumentObject.modsecurityAuditLogPath, dataSource)
 
         # Correlate.
-        for correlationDict in ModsecurityAuditCorrelator().correlate(dataSource):
+        for correlationDict in ModsecurityAuditCorrelator().correlate(dataSource, ignoredVariableDict):
             pprint(correlationDict)
     
         return 0

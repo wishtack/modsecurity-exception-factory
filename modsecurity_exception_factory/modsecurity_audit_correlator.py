@@ -11,14 +11,15 @@ from .correlation import CorrelationEngine
 
 class ModsecurityAuditCorrelator:
     
-    def correlate(self, dataSource, minimumOccurrenceCountThreshold = 0):
+    def correlate(self, dataSource, ignoredVariableDict = {}, minimumOccurrenceCountThreshold = 0):
         """Yields correlations as dict objects.
 The dict keys are variables' names and the values are set objects containing variables' values. 
     :type dataSource: IModsecurityAuditDataSource
+    :type ignoredVariableDict: dict(str:list(unicode))
     :type minimumOccurrenceCountThreshold: int
 """
         variableNameList = ['hostName', 'requestFileName', 'payloadContainer', 'ruleId']
         
-        for correlationDict in CorrelationEngine(variableNameList).correlate(dataSource,
-                                                                             minimumOccurrenceCountThreshold):
+        for correlationDict in CorrelationEngine(variableNameList, ignoredVariableDict).correlate(dataSource,
+                                                                                                  minimumOccurrenceCountThreshold):
             yield correlationDict
