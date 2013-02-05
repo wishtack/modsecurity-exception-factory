@@ -16,7 +16,7 @@ from synthetic.decorators import synthesizeMember, synthesizeConstructor
 new_contract('IModsecurityAuditLogSectionParser', IModsecurityAuditLogSectionParser)
 
 @synthesizeMember('currentLineString', contract = 'unicode|None')
-@synthesizeMember('currentSectionLineIndex', contract = 'int|None', defaultValue = 0)
+@synthesizeMember('currentSectionLineIndex', default = 0, contract = 'int|None')
 @synthesizeMember('currentSectionParser', contract = 'IModsecurityAuditLogSectionParser|None')
 @synthesizeMember('modsecurityAuditEntry', contract = 'ModsecurityAuditEntry|None')
 @synthesizeMember('reachedEntryStart', contract = 'bool|None')

@@ -16,7 +16,7 @@ new_contract('ModsecurityAuditEntryMessage', ModsecurityAuditEntryMessage)
 @synthesizeMember('hostName', contract = 'unicode|None')
 @synthesizeMember('requestFileName', contract = 'unicode|None')
 @synthesizeMember('messageList', contract = 'list(ModsecurityAuditEntryMessage)|None')
-@synthesizeMember('inboundAnomalyScore', contract = 'int|None', defaultValue = 0)
+@synthesizeMember('inboundAnomalyScore', default = 0, contract = 'int|None')
 @synthesizeConstructor()
 class ModsecurityAuditEntry:
     def __init__(self):

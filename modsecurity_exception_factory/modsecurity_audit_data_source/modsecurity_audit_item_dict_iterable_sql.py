@@ -234,7 +234,7 @@ class _ModsecurityAuditItemDictIteratorSQL:
 @synthesizeMember('variableName', contract = str)
 @synthesizeMember('variableValue', contract = 'unicode')
 @synthesizeMember('childFilter')
-@synthesizeMember('negate', contract = bool, defaultValue = False)
+@synthesizeMember('negate', default = False, contract = bool)
 @synthesizeConstructor()
 class _Filter:
 
