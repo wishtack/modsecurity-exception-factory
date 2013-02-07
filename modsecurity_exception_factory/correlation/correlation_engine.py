@@ -40,8 +40,13 @@ The dict keys are variables' names and the values are set objects containing var
         
         itemDictIterable = itemDictIterable.distinct()
         self._totalCount = len(itemDictIterable)
-        for variableSetDict in self._correlationDictIterable(itemDictIterable, set(self._variableNameList)):
-            yield variableSetDict
+        for correlationDict in self._correlationDictIterable(itemDictIterable, set(self._variableNameList)):
+            newCorrelationDict = {}
+            for key, valueSet in correlationDict.items():
+                if len(valueSet) > 10:
+                    valueSet = set([None])
+                newCorrelationDict[key] = valueSet
+            yield newCorrelationDict
 
     def _removeItemsMatchingIgnoredVariableDict(self, itemDictIterable):
         for variableName, variableValueList in self._ignoredVariableDict.items():
@@ -208,18 +213,3 @@ The dict keys are variables' names and the values are set objects containing var
 
     def _correlationDictSimpleKeyIterable(self, correlationDict):
         return filter(lambda key: isinstance(key, str), correlationDict)
-
-    def _attributeSet(self, correlationDict):
-        # Ignoring merged attributes tuples.
-        return set(filter(lambda key: isinstance(key, str), correlationDict.keys()))
-
-    def _unionCorrelationDict(self, correlationDictList):
-        resultCorrelationDict = {}
-        
-        for correlationDict in correlationDictList:
-            for attribute, valueSet in correlationDict.items():
-                valueSet = correlationDict[attribute]
-                resultValueSet = resultCorrelationDict.get(attribute, set())
-                resultValueSet.update(valueSet)
-                resultCorrelationDict[attribute] = resultValueSet
-        return resultCorrelationDict
