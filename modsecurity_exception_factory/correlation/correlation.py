@@ -99,6 +99,15 @@ class Correlation:
         del self._subCorrelationList[-1]
         self._subCorrelationList.extend(subCorrelationList)
 
+    def __repr__(self, indent = u""):
+        variableValueList = list(self._variableValueSet)
+        variableValueList.sort()
+        variableValueListAsString = u", ".join([unicode(v) for v in variableValueList])
+        reprString = u"%s%s = %s\n" % (indent, self._variableName, variableValueListAsString)
+        for subCorrelation in self._subCorrelationList:
+            reprString += subCorrelation.__repr__(indent + u"        ")
+        return reprString
+
     def _hasOnlyOneBranch(self):
         subCorrelationCount = len(self._subCorrelationList)
         if subCorrelationCount == 0:

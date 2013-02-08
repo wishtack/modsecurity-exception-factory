@@ -18,7 +18,7 @@ The dict keys are variables' names and the values are set objects containing var
     :type ignoredVariableDict: dict(str:list(unicode))
     :type minimumOccurrenceCountThreshold: int
 """
-        variableNameList = ['requestFileName', 'payloadContainer', 'ruleId']
+        variableNameList = ['hostName', 'requestFileName', 'payloadContainer', 'ruleId']
         
         for correlationDict in CorrelationEngine(variableNameList, ignoredVariableDict).correlate(dataSource,
                                                                                                   minimumOccurrenceCountThreshold):

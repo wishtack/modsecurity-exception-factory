@@ -279,6 +279,8 @@ class TestModsecurityAuditCorrelationEngine(unittest.TestCase):
         dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
 
         correlationList = list(ModsecurityAuditCorrelator().correlate(dataSource))
+        from pprint import pprint
+        pprint(correlationList)
         self.assertEqual(self._EXPECTED_CORRELATION_LIST, correlationList)
 
     def testCorrelateWithIgnoredVariableDict(self):
