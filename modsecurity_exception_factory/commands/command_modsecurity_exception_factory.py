@@ -9,13 +9,14 @@
 
 from contracts import contract, new_contract
 from modsecurity_exception_factory.config import Config
-from modsecurity_exception_factory.modsecurity_audit_correlator import \
-    ModsecurityAuditCorrelator
+from modsecurity_exception_factory.correlation.correlation_engine import \
+    CorrelationEngine
+from modsecurity_exception_factory.correlation.correlation_progress_listener_console import \
+    CorrelationProgressListenerConsole
 from modsecurity_exception_factory.modsecurity_audit_data_source import \
     IModsecurityAuditDataSource, ModsecurityAuditDataSourceSQL
 from modsecurity_exception_factory.modsecurity_audit_log_parser import \
     ModsecurityAuditLogParser
-from pprint import pprint
 import argparse
 import contracts
 import io
@@ -52,14 +53,11 @@ class CommandModsecurityExceptionFactory:
     
         argumentObject = argumentParser.parse_args(argumentList)
 
-        # Parse config if given.
-        config = None
-        if argumentObject.configFilePath is not None:
-            config = Config(argumentObject.configFilePath)
+        # Try to parse config.
+        config = Config(argumentObject.configFilePath)
+        variableNameList = config.variableNameList()
+        ignoredVariableDict = config.ignoredVariableDict()
         
-        ignoredVariableDict = {}
-        if config is not None:
-            ignoredVariableDict = config.ingoredVariableDict()
 
         # Initialize data source object.
         dataSource = ModsecurityAuditDataSourceSQL(argumentObject.dataURL)
@@ -69,8 +67,10 @@ class CommandModsecurityExceptionFactory:
             self._parseFile(argumentObject.modsecurityAuditLogPath, dataSource)
 
         # Correlate.
-        for correlationDict in ModsecurityAuditCorrelator().correlate(dataSource, ignoredVariableDict):
-            pprint(correlationDict)
+        correlationEngine = CorrelationEngine(variableNameList, ignoredVariableDict)
+        correlationEngine.addProgressListener(CorrelationProgressListenerConsole(sys.stderr))
+        for correlation in correlationEngine.correlate(dataSource):
+            print(correlation)
     
         return 0
 

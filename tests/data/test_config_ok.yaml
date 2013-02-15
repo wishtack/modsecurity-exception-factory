@@ -1,0 +1,9 @@
+
+ignore:
+    ruleId: [111111, 222222, 333333]
+    hostName: [1.1.1.1]
+
+variables:
+    - aaa
+    - bbb
+    - ccc
