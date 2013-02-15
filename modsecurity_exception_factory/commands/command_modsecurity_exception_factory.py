@@ -11,6 +11,8 @@ from contracts import contract, new_contract
 from modsecurity_exception_factory.config import Config
 from modsecurity_exception_factory.correlation.correlation_engine import \
     CorrelationEngine
+from modsecurity_exception_factory.correlation.correlation_progress_listener_console import \
+    CorrelationProgressListenerConsole
 from modsecurity_exception_factory.modsecurity_audit_data_source import \
     IModsecurityAuditDataSource, ModsecurityAuditDataSourceSQL
 from modsecurity_exception_factory.modsecurity_audit_log_parser import \
@@ -66,6 +68,7 @@ class CommandModsecurityExceptionFactory:
 
         # Correlate.
         correlationEngine = CorrelationEngine(variableNameList, ignoredVariableDict)
+        correlationEngine.addProgressListener(CorrelationProgressListenerConsole(sys.stderr))
         for correlation in correlationEngine.correlate(dataSource):
             print(correlation)
     

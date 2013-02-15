@@ -8,8 +8,11 @@
 #
 
 from .correlation import Correlation
-from contracts import contract
+from .i_correlation_progress_listener import ICorrelationProgressListener
+from contracts import contract, new_contract
 import copy
+
+new_contract('ICorrelationProgressListener', ICorrelationProgressListener)
 
 class ImpossibleError(Exception):
     def __init__(self):
@@ -27,6 +30,9 @@ class CorrelationEngine:
 """
         self._variableNameList = variableNameList
         self._ignoredVariableDict = ignoredVariableDict
+        self._progressListenerList = []
+        self._count = 0
+        self._totalCount = 0
     
     @contract
     def correlate(self, dataSource, minimumOccurrenceCountThreshold = 0):
@@ -40,9 +46,20 @@ Yields :class:Correlation objects.
         itemDictIterable = self._removeItemsMatchingIgnoredVariableDict(itemDictIterable)
         
         itemDictIterable = itemDictIterable.distinct()
+        
+        # Initialize counters.
+        self._count = 0
         self._totalCount = len(itemDictIterable)
         for correlation in self._correlationIterable(itemDictIterable, self._variableNameList):
             yield correlation
+
+    @contract
+    def addProgressListener(self, progressListener):
+        """
+    :type progressListener: ICorrelationProgressListener
+"""
+        if progressListener not in self._progressListenerList:
+            self._progressListenerList.append(progressListener)
 
     def _removeItemsMatchingIgnoredVariableDict(self, itemDictIterable):
         for variableName, variableValueList in self._ignoredVariableDict.items():
@@ -53,8 +70,13 @@ Yields :class:Correlation objects.
     def _correlationIterable(self, itemDictIterable, variableNameList):
         # Merge all values when there's only one variable remaining.
         if len(variableNameList) == 1:
+            # Variable name.
             variableName = variableNameList[0]
+            # Values set.
             variableValueSet = set([d[variableName] for d in itemDictIterable])
+            # Increment progress and inform listeners.
+            self._incrementProgress(len(itemDictIterable))
+            # Correlation leaf is ready.
             yield Correlation(variableName, variableValueSet = variableValueSet)
             return
 
@@ -93,3 +115,12 @@ Yields :class:Correlation objects.
         for variableName, variableValue in mostFrequentVariableNameAndValue.items():
             correlationDict[variableName] = set(variableValue)
         return correlationDict
+
+    @contract
+    def _incrementProgress(self, itemCount):
+        """
+    :type itemCount: int
+"""
+        self._count += itemCount
+        for progressListener in self._progressListenerList:
+            progressListener.progress(self._count, self._totalCount)

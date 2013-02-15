@@ -7,8 +7,11 @@
 # $Id$
 #
 
+from mock import Mock, call
 from modsecurity_exception_factory.correlation.correlation_engine import \
     CorrelationEngine
+from modsecurity_exception_factory.correlation.i_correlation_progress_listener import \
+    ICorrelationProgressListener
 from modsecurity_exception_factory.modsecurity_audit_data_source.modsecurity_audit_data_source_sql import \
     ModsecurityAuditDataSourceSQL
 from modsecurity_exception_factory.modsecurity_audit_log_parser.modsecurity_audit_log_parser import \
@@ -95,9 +98,32 @@ class TestModsecurityAuditCorrelationEngine(unittest.TestCase):
         # Fillup database.
         dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
 
+        # Making correlation engine.
         correlationEngine = CorrelationEngine(self._VARIABLE_NAME_LIST)
+        
+        # Testing progress listener.
+        progressListener = Mock(ICorrelationProgressListener)
+        correlationEngine.addProgressListener(progressListener)
+
+        # Correlating.
         correlationList = map(lambda correlation: repr(correlation), correlationEngine.correlate(dataSource))
         self.assertEqual(self._EXPECTED_CORRELATION_LIST, correlationList)
+        
+        self.assertEqual([call.progress(160, 545),
+                          call.progress(320, 545),
+                          call.progress(480, 545),
+                          call.progress(484, 545),
+                          call.progress(500, 545),
+                          call.progress(516, 545),
+                          call.progress(532, 545),
+                          call.progress(534, 545),
+                          call.progress(536, 545),
+                          call.progress(537, 545),
+                          call.progress(539, 545),
+                          call.progress(541, 545),
+                          call.progress(543, 545),
+                          call.progress(545, 545)],
+                         progressListener.mock_calls)
 
     def testCorrelateWithIgnoredVariableDict(self):
         # Fillup database.

@@ -79,21 +79,26 @@ hostName = test.domain.com
         # Restore stdout.
         cleanUp()
 
+    @patch('sys.stderr', StringIO())
     @patch('sys.stdout', StringIO())
     def testOK(self):
         CommandModsecurityExceptionFactory().main([u"-i", MODSECURITY_AUDIT_LOG_SAMPLE_PATH,
                                                    u"-d", MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL])
         self.assertEqual(self._EXPECTED_OUTPUT, sys.stdout.getvalue())
+        self.assertEqual(u"\r 29.36% (160/545)\r 58.72% (320/545)\r 88.07% (480/545)\r 88.81% (484/545)\r 91.74% (500/545)\r 94.68% (516/545)\r 97.61% (532/545)\r 97.98% (534/545)\r 98.35% (536/545)\r 98.53% (537/545)\r 98.90% (539/545)\r 99.27% (541/545)\r 99.63% (543/545)\r100.00% (545/545)",
+                         sys.stderr.getvalue())
 
+    @patch('modsecurity_exception_factory.correlation.correlation_progress_listener_console.CorrelationProgressListenerConsole.progress')
     @patch('sys.stdout', StringIO())
-    def testWithIgnoredVariableDict(self):
+    def testWithIgnoredVariableDict(self, *args):
         CommandModsecurityExceptionFactory().main([u"-i", MODSECURITY_AUDIT_LOG_SAMPLE_PATH,
                                                    u"-d", MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL,
                                                    u"-c", self._TEST_CONFIG_FILE_PATH])
         self.assertEqual(self._EXPECTED_OUTPUT_WTTH_IGNORED_VARIABLE_DICT, sys.stdout.getvalue())
 
+    @patch('modsecurity_exception_factory.correlation.correlation_progress_listener_console.CorrelationProgressListenerConsole.progress')
     @patch('sys.stdout', StringIO())
-    def testDataSourceReuse(self):
+    def testDataSourceReuse(self, *args):
         # This will create the data source.
         CommandModsecurityExceptionFactory().main([u"-i", MODSECURITY_AUDIT_LOG_SAMPLE_PATH,
                                                    u"-d", MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL])
