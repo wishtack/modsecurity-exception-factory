@@ -15,7 +15,6 @@ from modsecurity_exception_factory.modsecurity_audit_data_source import \
     IModsecurityAuditDataSource, ModsecurityAuditDataSourceSQL
 from modsecurity_exception_factory.modsecurity_audit_log_parser import \
     ModsecurityAuditLogParser
-from pprint import pprint
 import argparse
 import contracts
 import io
@@ -69,8 +68,8 @@ class CommandModsecurityExceptionFactory:
             self._parseFile(argumentObject.modsecurityAuditLogPath, dataSource)
 
         # Correlate.
-        for correlationDict in ModsecurityAuditCorrelator().correlate(dataSource, ignoredVariableDict):
-            pprint(correlationDict)
+        for correlation in ModsecurityAuditCorrelator().correlate(dataSource, ignoredVariableDict):
+            print(correlation)
     
         return 0
 

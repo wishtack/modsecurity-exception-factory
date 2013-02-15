@@ -22,239 +22,53 @@ class TestCommandModsecurityExceptionFactory(unittest.TestCase):
     _TEST_CONFIG_FILE_PATH = testFilePath(u"data/test.yaml")
 
     _EXPECTED_OUTPUT = """\
-{'hostName': set([u'1.1.1.1']),
- 'requestFileName': set([u'/agilefant/ajax/iterationData.action',
-                         u'/agilefant/ajax/myAssignmentsMenuData.action',
-                         u'/agilefant/dailyWork.action',
-                         u'/agilefant/drawIterationBurndown.action',
-                         u'/agilefant/drawSmallIterationBurndown.action',
-                         u'/agilefant/static/css/main.css',
-                         u'/agilefant/static/img/backlog.png',
-                         u'/agilefant/static/img/button_fade.png',
-                         u'/agilefant/static/img/dailyWork.png',
-                         u'/agilefant/static/img/dynatree/ltL_ne.gif',
-                         u'/agilefant/static/img/dynatree/ltL_nes.gif',
-                         u'/agilefant/static/img/dynatree/ltL_ns.gif',
-                         u'/agilefant/static/img/dynatree/ltM_ne.gif',
-                         u'/agilefant/static/img/dynatree/ltM_nes.gif',
-                         u'/agilefant/static/img/dynatree/ltP_ne.gif',
-                         u'/agilefant/static/img/dynatree/ltP_nes.gif',
-                         u'/agilefant/static/img/dynatree/ltWait.gif',
-                         u'/agilefant/static/img/favicon.png',
-                         u'/agilefant/static/img/filter.png',
-                         u'/agilefant/static/img/info.png',
-                         u'/agilefant/static/img/labelIcon.png',
-                         u'/agilefant/static/img/open_close.png',
-                         u'/agilefant/static/img/pleasewait.gif',
-                         u'/agilefant/static/img/portfolio.png',
-                         u'/agilefant/static/img/search_small.png',
-                         u'/agilefant/static/img/settings.png',
-                         u'/agilefant/static/img/sort.png',
-                         u'/agilefant/static/img/team.png',
-                         u'/agilefant/static/img/timesheets.png',
-                         u'/agilefant/static/img/toggle.png',
-                         u'/agilefant/static/img/top-logo.png',
-                         u'/agilefant/static/img/ui/ui-bg_glass_85_dfeffc_1x400.png',
-                         u'/agilefant/static/img/ui/ui-bg_gloss-wave_55_333333_500x100.png',
-                         u'/agilefant/static/img/ui/ui-bg_gloss-wave_55_5c9ccc_500x100.png',
-                         u'/agilefant/static/img/ui/ui-bg_inset-hard_100_f5f8f9_1x100.png',
-                         u'/agilefant/static/img/ui/ui-bg_inset-hard_100_fcfdfd_1x100.png',
-                         u'/agilefant/static/img/ui/ui-icons_6da8d5_256x240.png',
-                         u'/agilefant/static/img/ui/ui-icons_f9bd01_256x240.png',
-                         u'/agilefant/static/js/autocomplete/autocompleteBundle.js',
-                         u'/agilefant/static/js/autocomplete/autocompleteDataProvider.js',
-                         u'/agilefant/static/js/autocomplete/autocompleteDialog.js',
-                         u'/agilefant/static/js/autocomplete/autocompleteInline.js',
-                         u'/agilefant/static/js/autocomplete/autocompleteRecent.js',
-                         u'/agilefant/static/js/autocomplete/autocompleteSearchBox.js',
-                         u'/agilefant/static/js/autocomplete/autocompleteSelectedBox.js',
-                         u'/agilefant/static/js/autocomplete/autocompleteSingleDialog.js',
-                         u'/agilefant/static/js/backlogChooser.js',
-                         u'/agilefant/static/js/backlogSelector.js',
-                         u'/agilefant/static/js/date.js',
-                         u'/agilefant/static/js/dynamics/Dynamics.events.js',
-                         u'/agilefant/static/js/dynamics/controller/AdministrationMenuController.js',
-                         u'/agilefant/static/js/dynamics/controller/AssignmentController.js',
-                         u'/agilefant/static/js/dynamics/controller/BacklogController.js',
-                         u'/agilefant/static/js/dynamics/controller/CommonController.js',
-                         u'/agilefant/static/js/dynamics/controller/CreateDialog.js',
-                         u'/agilefant/static/js/dynamics/controller/DailyWorkController.js',
-                         u'/agilefant/static/js/dynamics/controller/DailyWorkStoryListController.js',
-                         u'/agilefant/static/js/dynamics/controller/DailyWorkTasksWithoutStoryController.js',
-                         u'/agilefant/static/js/dynamics/controller/HourEntryController.js',
-                         u'/agilefant/static/js/dynamics/controller/HourEntryListController.js',
-                         u'/agilefant/static/js/dynamics/controller/IterationController.js',
-                         u'/agilefant/static/js/dynamics/controller/IterationRowController.js',
-                         u'/agilefant/static/js/dynamics/controller/MenuController.js',
-                         u'/agilefant/static/js/dynamics/controller/MyAssignmentsMenuController.js',
-                         u'/agilefant/static/js/dynamics/controller/PageController.js',
-                         u'/agilefant/static/js/dynamics/controller/PersonalLoadController.js',
-                         u'/agilefant/static/js/dynamics/controller/PortfolioController.js',
-                         u'/agilefant/static/js/dynamics/controller/PortfolioRowController.js',
-                         u'/agilefant/static/js/dynamics/controller/ProductController.js',
-                         u'/agilefant/static/js/dynamics/controller/ProjectController.js',
-                         u'/agilefant/static/js/dynamics/controller/ProjectRowController.js',
-                         u'/agilefant/static/js/dynamics/controller/StoryController.js',
-                         u'/agilefant/static/js/dynamics/controller/StoryInfoBubble.js',
-                         u'/agilefant/static/js/dynamics/controller/StoryListController.js',
-                         u'/agilefant/static/js/dynamics/controller/StoryTreeController.js',
-                         u'/agilefant/static/js/dynamics/controller/TaskController.js',
-                         u'/agilefant/static/js/dynamics/controller/TaskInfoDialog.js',
-                         u'/agilefant/static/js/dynamics/controller/TaskSplitDialog.js',
-                         u'/agilefant/static/js/dynamics/controller/TasksWithoutStoryController.js',
-                         u'/agilefant/static/js/dynamics/controller/TeamListController.js',
-                         u'/agilefant/static/js/dynamics/controller/TeamRowController.js',
-                         u'/agilefant/static/js/dynamics/controller/UserController.js',
-                         u'/agilefant/static/js/dynamics/controller/UserListController.js',
-                         u'/agilefant/static/js/dynamics/controller/UserRowController.js',
-                         u'/agilefant/static/js/dynamics/controller/WorkQueueController.js',
-                         u'/agilefant/static/js/dynamics/model/AssignmentModel.js',
-                         u'/agilefant/static/js/dynamics/model/BacklogModel.js',
-                         u'/agilefant/static/js/dynamics/model/CommonModel.js',
-                         u'/agilefant/static/js/dynamics/model/DailyWorkModel.js',
-                         u'/agilefant/static/js/dynamics/model/HourEntryListContainer.js',
-                         u'/agilefant/static/js/dynamics/model/HourEntryModel.js',
-                         u'/agilefant/static/js/dynamics/model/IterationModel.js',
-                         u'/agilefant/static/js/dynamics/model/LabelModel.js',
-                         u'/agilefant/static/js/dynamics/model/ModelFactory.js',
-                         u'/agilefant/static/js/dynamics/model/PortfolioModel.js',
-                         u'/agilefant/static/js/dynamics/model/ProductModel.js',
-                         u'/agilefant/static/js/dynamics/model/ProjectModel.js',
-                         u'/agilefant/static/js/dynamics/model/StoryModel.js',
-                         u'/agilefant/static/js/dynamics/model/TaskModel.js',
-                         u'/agilefant/static/js/dynamics/model/TaskSplitContainer.js',
-                         u'/agilefant/static/js/dynamics/model/TeamListContainer.js',
-                         u'/agilefant/static/js/dynamics/model/TeamModel.js',
-                         u'/agilefant/static/js/dynamics/model/UserListContainer.js',
-                         u'/agilefant/static/js/dynamics/model/UserModel.js',
-                         u'/agilefant/static/js/dynamics/model/WorkQueueTaskModel.js',
-                         u'/agilefant/static/js/dynamics/model/comparators.js',
-                         u'/agilefant/static/js/dynamics/view/Bubble.js',
-                         u'/agilefant/static/js/dynamics/view/Cell.js',
-                         u'/agilefant/static/js/dynamics/view/ChangePasswordDialog.js',
-                         u'/agilefant/static/js/dynamics/view/CommonFragmentSubView.js',
-                         u'/agilefant/static/js/dynamics/view/CommonSubView.js',
-                         u'/agilefant/static/js/dynamics/view/ConfirmationDialog.js',
-                         u'/agilefant/static/js/dynamics/view/DynamicView.js',
-                         u'/agilefant/static/js/dynamics/view/LazyLoadedDialog.js',
-                         u'/agilefant/static/js/dynamics/view/MessageDisplay.js',
-                         u'/agilefant/static/js/dynamics/view/MultiEditWidget.js',
-                         u'/agilefant/static/js/dynamics/view/Row.js',
-                         u'/agilefant/static/js/dynamics/view/SearchByTextWidget.js',
-                         u'/agilefant/static/js/dynamics/view/SpentEffortWidget.js',
-                         u'/agilefant/static/js/dynamics/view/StateFilterWidget.js',
-                         u'/agilefant/static/js/dynamics/view/StoryFiltersView.js',
-                         u'/agilefant/static/js/dynamics/view/Table.js',
-                         u'/agilefant/static/js/dynamics/view/TableCaption.js',
-                         u'/agilefant/static/js/dynamics/view/TableCellEditors.js',
-                         u'/agilefant/static/js/dynamics/view/TableConfiguration.js',
-                         u'/agilefant/static/js/dynamics/view/UserSpentEffortWidget.js',
-                         u'/agilefant/static/js/dynamics/view/ValidationManager.js',
-                         u'/agilefant/static/js/dynamics/view/ViewPart.js',
-                         u'/agilefant/static/js/dynamics/view/decorators.js',
-                         u'/agilefant/static/js/dynamics/view/subviews/AutoSuggest.js',
-                         u'/agilefant/static/js/dynamics/view/subviews/Button.js',
-                         u'/agilefant/static/js/dynamics/view/subviews/Buttons.js',
-                         u'/agilefant/static/js/dynamics/view/subviews/CellBubble.js',
-                         u'/agilefant/static/js/dynamics/view/subviews/LabelsIcon.js',
-                         u'/agilefant/static/js/dynamics/view/subviews/LabelsView.js',
-                         u'/agilefant/static/js/dynamics/view/subviews/RowActions.js',
-                         u'/agilefant/static/js/dynamics/view/subviews/SplitPanel.js',
-                         u'/agilefant/static/js/dynamics/view/subviews/StoryInfoWidget.js',
-                         u'/agilefant/static/js/dynamics/view/subviews/Tabs.js',
-                         u'/agilefant/static/js/dynamics/view/subviews/Toggle.js',
-                         u'/agilefant/static/js/jquery-ui.min.js',
-                         u'/agilefant/static/js/jquery.autoSuggest.minified.js',
-                         u'/agilefant/static/js/jquery.cookie.js',
-                         u'/agilefant/static/js/jquery.dynatree.js',
-                         u'/agilefant/static/js/jquery.hotkeys.js',
-                         u'/agilefant/static/js/jquery.js',
-                         u'/agilefant/static/js/jquery.jstree.js',
-                         u'/agilefant/static/js/jquery.labelify.js',
-                         u'/agilefant/static/js/jquery.tagcloud.min.js',
-                         u'/agilefant/static/js/jquery.tooltip.js',
-                         u'/agilefant/static/js/jquery.wysiwyg.js',
-                         u'/agilefant/static/js/utils/ArrayUtils.js',
-                         u'/agilefant/static/js/utils/ClassUtils.js',
-                         u'/agilefant/static/js/utils/HelpUtils.js',
-                         u'/agilefant/static/js/utils/Parsers.js',
-                         u'/agilefant/static/js/utils/XworkSerializer.js',
-                         u'/agilefant/static/js/utils/aef.jstree.plugin.js',
-                         u'/agilefant/static/js/utils/menuTimer.js',
-                         u'/agilefant/static/js/utils/quickSearch.js',
-                         u'/agilefant/static/js/utils/refLinkDisplay.js']),
- ('payloadContainer', 'ruleId'): set([(u'REQUEST_HEADERS:Host', u'960017'),
-                                      (u'TX:anomaly_score', u'981174'),
-                                      (u'TX:inbound_anomaly_score',
-                                       u'981203')])}
-{'hostName': set([u'1.1.1.1']),
- 'payloadContainer': set([u'TX:sqli_select_statement_count']),
- 'requestFileName': set([u'/agilefant/drawIterationBurndown.action',
-                         u'/agilefant/static/img/top-logo.png',
-                         u'/agilefant/static/js/autocomplete/autocompleteSelectedBox.js',
-                         u'/agilefant/static/js/backlogSelector.js']),
- 'ruleId': set([u'981317'])}
-{'hostName': set([u'test.domain.com']),
- 'requestFileName': set([u'/agilefant/editIteration.action',
-                         u'/agilefant/login.jsp',
-                         u'/agilefant/static/css/main.css',
-                         u'/agilefant/static/img/agilefant-logo-80px.png',
-                         u'/agilefant/static/img/login_gradient.png',
-                         u'/agilefant/static/img/ui/ui-bg_gloss-wave_55_5c9ccc_500x100.png',
-                         u'/agilefant/static/img/ui/ui-bg_inset-hard_100_fcfdfd_1x100.png',
-                         u'/agilefant/static/js/backlogChooser.js',
-                         u'/agilefant/static/js/backlogSelector.js',
-                         u'/agilefant/static/js/date.js',
-                         u'/agilefant/static/js/jquery-ui.min.js',
-                         u'/agilefant/static/js/jquery.cookie.js',
-                         u'/agilefant/static/js/jquery.dynatree.js',
-                         u'/agilefant/static/js/jquery.hotkeys.js',
-                         u'/agilefant/static/js/jquery.js',
-                         u'/agilefant/static/js/jquery.wysiwyg.js']),
- ('payloadContainer', 'ruleId'): set([(u'REQUEST_HEADERS:Host', u'960017'),
-                                      (u'TX:anomaly_score', u'981174'),
-                                      (u'TX:inbound_anomaly_score',
-                                       u'981203')])}
-{'hostName': set([u'test.domain.com']),
- 'payloadContainer': set([u'ARGS:a', u'ARGS:b']),
- 'requestFileName': set([u'/agilefant/login.jsp']),
- 'ruleId': set([u'111111', u'222222'])}
-{'hostName': set([u'test.domain.com']),
- 'payloadContainer': set([u'TX:sqli_select_statement_count']),
- 'requestFileName': set([u'/agilefant/static/js/backlogSelector.js']),
- 'ruleId': set([u'981317'])}
-{'hostName': set([None]),
- 'payloadContainer': set([u'ARGS:a', u'ARGS:b']),
- 'requestFileName': set([None, u'/agilefant/login.jsp']),
- 'ruleId': set([u'111111', u'222222'])}
+hostName = 1.1.1.1
+        requestFileName = /agilefant/ajax/iterationData.action, /agilefant/ajax/myAssignmentsMenuData.action, /agilefant/dailyWork.action, /agilefant/drawIterationBurndown.action, /agilefant/drawSmallIterationBurndown.action, /agilefant/static/css/main.css, /agilefant/static/img/backlog.png, /agilefant/static/img/button_fade.png, /agilefant/static/img/dailyWork.png, /agilefant/static/img/dynatree/ltL_ne.gif, /agilefant/static/img/dynatree/ltL_nes.gif, /agilefant/static/img/dynatree/ltL_ns.gif, /agilefant/static/img/dynatree/ltM_ne.gif, /agilefant/static/img/dynatree/ltM_nes.gif, /agilefant/static/img/dynatree/ltP_ne.gif, /agilefant/static/img/dynatree/ltP_nes.gif, /agilefant/static/img/dynatree/ltWait.gif, /agilefant/static/img/favicon.png, /agilefant/static/img/filter.png, /agilefant/static/img/info.png, /agilefant/static/img/labelIcon.png, /agilefant/static/img/open_close.png, /agilefant/static/img/pleasewait.gif, /agilefant/static/img/portfolio.png, /agilefant/static/img/search_small.png, /agilefant/static/img/settings.png, /agilefant/static/img/sort.png, /agilefant/static/img/team.png, /agilefant/static/img/timesheets.png, /agilefant/static/img/toggle.png, /agilefant/static/img/top-logo.png, /agilefant/static/img/ui/ui-bg_glass_85_dfeffc_1x400.png, /agilefant/static/img/ui/ui-bg_gloss-wave_55_333333_500x100.png, /agilefant/static/img/ui/ui-bg_gloss-wave_55_5c9ccc_500x100.png, /agilefant/static/img/ui/ui-bg_inset-hard_100_f5f8f9_1x100.png, /agilefant/static/img/ui/ui-bg_inset-hard_100_fcfdfd_1x100.png, /agilefant/static/img/ui/ui-icons_6da8d5_256x240.png, /agilefant/static/img/ui/ui-icons_f9bd01_256x240.png, /agilefant/static/js/autocomplete/autocompleteBundle.js, /agilefant/static/js/autocomplete/autocompleteDataProvider.js, /agilefant/static/js/autocomplete/autocompleteDialog.js, /agilefant/static/js/autocomplete/autocompleteInline.js, /agilefant/static/js/autocomplete/autocompleteRecent.js, /agilefant/static/js/autocomplete/autocompleteSearchBox.js, /agilefant/static/js/autocomplete/autocompleteSelectedBox.js, /agilefant/static/js/autocomplete/autocompleteSingleDialog.js, /agilefant/static/js/backlogChooser.js, /agilefant/static/js/backlogSelector.js, /agilefant/static/js/date.js, /agilefant/static/js/dynamics/Dynamics.events.js, /agilefant/static/js/dynamics/controller/AdministrationMenuController.js, /agilefant/static/js/dynamics/controller/AssignmentController.js, /agilefant/static/js/dynamics/controller/BacklogController.js, /agilefant/static/js/dynamics/controller/CommonController.js, /agilefant/static/js/dynamics/controller/CreateDialog.js, /agilefant/static/js/dynamics/controller/DailyWorkController.js, /agilefant/static/js/dynamics/controller/DailyWorkStoryListController.js, /agilefant/static/js/dynamics/controller/DailyWorkTasksWithoutStoryController.js, /agilefant/static/js/dynamics/controller/HourEntryController.js, /agilefant/static/js/dynamics/controller/HourEntryListController.js, /agilefant/static/js/dynamics/controller/IterationController.js, /agilefant/static/js/dynamics/controller/IterationRowController.js, /agilefant/static/js/dynamics/controller/MenuController.js, /agilefant/static/js/dynamics/controller/MyAssignmentsMenuController.js, /agilefant/static/js/dynamics/controller/PageController.js, /agilefant/static/js/dynamics/controller/PersonalLoadController.js, /agilefant/static/js/dynamics/controller/PortfolioController.js, /agilefant/static/js/dynamics/controller/PortfolioRowController.js, /agilefant/static/js/dynamics/controller/ProductController.js, /agilefant/static/js/dynamics/controller/ProjectController.js, /agilefant/static/js/dynamics/controller/ProjectRowController.js, /agilefant/static/js/dynamics/controller/StoryController.js, /agilefant/static/js/dynamics/controller/StoryInfoBubble.js, /agilefant/static/js/dynamics/controller/StoryListController.js, /agilefant/static/js/dynamics/controller/StoryTreeController.js, /agilefant/static/js/dynamics/controller/TaskController.js, /agilefant/static/js/dynamics/controller/TaskInfoDialog.js, /agilefant/static/js/dynamics/controller/TaskSplitDialog.js, /agilefant/static/js/dynamics/controller/TasksWithoutStoryController.js, /agilefant/static/js/dynamics/controller/TeamListController.js, /agilefant/static/js/dynamics/controller/TeamRowController.js, /agilefant/static/js/dynamics/controller/UserController.js, /agilefant/static/js/dynamics/controller/UserListController.js, /agilefant/static/js/dynamics/controller/UserRowController.js, /agilefant/static/js/dynamics/controller/WorkQueueController.js, /agilefant/static/js/dynamics/model/AssignmentModel.js, /agilefant/static/js/dynamics/model/BacklogModel.js, /agilefant/static/js/dynamics/model/CommonModel.js, /agilefant/static/js/dynamics/model/DailyWorkModel.js, /agilefant/static/js/dynamics/model/HourEntryListContainer.js, /agilefant/static/js/dynamics/model/HourEntryModel.js, /agilefant/static/js/dynamics/model/IterationModel.js, /agilefant/static/js/dynamics/model/LabelModel.js, /agilefant/static/js/dynamics/model/ModelFactory.js, /agilefant/static/js/dynamics/model/PortfolioModel.js, /agilefant/static/js/dynamics/model/ProductModel.js, /agilefant/static/js/dynamics/model/ProjectModel.js, /agilefant/static/js/dynamics/model/StoryModel.js, /agilefant/static/js/dynamics/model/TaskModel.js, /agilefant/static/js/dynamics/model/TaskSplitContainer.js, /agilefant/static/js/dynamics/model/TeamListContainer.js, /agilefant/static/js/dynamics/model/TeamModel.js, /agilefant/static/js/dynamics/model/UserListContainer.js, /agilefant/static/js/dynamics/model/UserModel.js, /agilefant/static/js/dynamics/model/WorkQueueTaskModel.js, /agilefant/static/js/dynamics/model/comparators.js, /agilefant/static/js/dynamics/view/Bubble.js, /agilefant/static/js/dynamics/view/Cell.js, /agilefant/static/js/dynamics/view/ChangePasswordDialog.js, /agilefant/static/js/dynamics/view/CommonFragmentSubView.js, /agilefant/static/js/dynamics/view/CommonSubView.js, /agilefant/static/js/dynamics/view/ConfirmationDialog.js, /agilefant/static/js/dynamics/view/DynamicView.js, /agilefant/static/js/dynamics/view/LazyLoadedDialog.js, /agilefant/static/js/dynamics/view/MessageDisplay.js, /agilefant/static/js/dynamics/view/MultiEditWidget.js, /agilefant/static/js/dynamics/view/Row.js, /agilefant/static/js/dynamics/view/SearchByTextWidget.js, /agilefant/static/js/dynamics/view/SpentEffortWidget.js, /agilefant/static/js/dynamics/view/StateFilterWidget.js, /agilefant/static/js/dynamics/view/StoryFiltersView.js, /agilefant/static/js/dynamics/view/Table.js, /agilefant/static/js/dynamics/view/TableCaption.js, /agilefant/static/js/dynamics/view/TableCellEditors.js, /agilefant/static/js/dynamics/view/TableConfiguration.js, /agilefant/static/js/dynamics/view/UserSpentEffortWidget.js, /agilefant/static/js/dynamics/view/ValidationManager.js, /agilefant/static/js/dynamics/view/ViewPart.js, /agilefant/static/js/dynamics/view/decorators.js, /agilefant/static/js/dynamics/view/subviews/AutoSuggest.js, /agilefant/static/js/dynamics/view/subviews/Button.js, /agilefant/static/js/dynamics/view/subviews/Buttons.js, /agilefant/static/js/dynamics/view/subviews/CellBubble.js, /agilefant/static/js/dynamics/view/subviews/LabelsIcon.js, /agilefant/static/js/dynamics/view/subviews/LabelsView.js, /agilefant/static/js/dynamics/view/subviews/RowActions.js, /agilefant/static/js/dynamics/view/subviews/SplitPanel.js, /agilefant/static/js/dynamics/view/subviews/StoryInfoWidget.js, /agilefant/static/js/dynamics/view/subviews/Tabs.js, /agilefant/static/js/dynamics/view/subviews/Toggle.js, /agilefant/static/js/jquery-ui.min.js, /agilefant/static/js/jquery.autoSuggest.minified.js, /agilefant/static/js/jquery.cookie.js, /agilefant/static/js/jquery.dynatree.js, /agilefant/static/js/jquery.hotkeys.js, /agilefant/static/js/jquery.js, /agilefant/static/js/jquery.jstree.js, /agilefant/static/js/jquery.labelify.js, /agilefant/static/js/jquery.tagcloud.min.js, /agilefant/static/js/jquery.tooltip.js, /agilefant/static/js/jquery.wysiwyg.js, /agilefant/static/js/utils/ArrayUtils.js, /agilefant/static/js/utils/ClassUtils.js, /agilefant/static/js/utils/HelpUtils.js, /agilefant/static/js/utils/Parsers.js, /agilefant/static/js/utils/XworkSerializer.js, /agilefant/static/js/utils/aef.jstree.plugin.js, /agilefant/static/js/utils/menuTimer.js, /agilefant/static/js/utils/quickSearch.js, /agilefant/static/js/utils/refLinkDisplay.js
+                ruleId = 960017
+                        payloadContainer = REQUEST_HEADERS:Host
+                ruleId = 981174
+                        payloadContainer = TX:anomaly_score
+                ruleId = 981203
+                        payloadContainer = TX:inbound_anomaly_score
+        ruleId = 981317
+                requestFileName = /agilefant/drawIterationBurndown.action, /agilefant/static/img/top-logo.png, /agilefant/static/js/autocomplete/autocompleteSelectedBox.js, /agilefant/static/js/backlogSelector.js
+                        payloadContainer = TX:sqli_select_statement_count
+
+hostName = test.domain.com
+        requestFileName = /agilefant/editIteration.action, /agilefant/login.jsp, /agilefant/static/css/main.css, /agilefant/static/img/agilefant-logo-80px.png, /agilefant/static/img/login_gradient.png, /agilefant/static/img/ui/ui-bg_gloss-wave_55_5c9ccc_500x100.png, /agilefant/static/img/ui/ui-bg_inset-hard_100_fcfdfd_1x100.png, /agilefant/static/js/backlogChooser.js, /agilefant/static/js/backlogSelector.js, /agilefant/static/js/date.js, /agilefant/static/js/jquery-ui.min.js, /agilefant/static/js/jquery.cookie.js, /agilefant/static/js/jquery.dynatree.js, /agilefant/static/js/jquery.hotkeys.js, /agilefant/static/js/jquery.js, /agilefant/static/js/jquery.wysiwyg.js
+                ruleId = 960017
+                        payloadContainer = REQUEST_HEADERS:Host
+                ruleId = 981174
+                        payloadContainer = TX:anomaly_score
+                ruleId = 981203
+                        payloadContainer = TX:inbound_anomaly_score
+        requestFileName = /agilefant/login.jsp
+                payloadContainer = ARGS:a, ARGS:b
+                        ruleId = 111111, 222222
+        ruleId = 981317
+                requestFileName = /agilefant/static/js/backlogSelector.js
+                        payloadContainer = TX:sqli_select_statement_count
+
+hostName = None
+        requestFileName = None, /agilefant/login.jsp
+                ruleId = 111111, 222222
+                        payloadContainer = ARGS:a, ARGS:b
+
 """
 
     _EXPECTED_OUTPUT_WTTH_IGNORED_VARIABLE_DICT = """\
-{'hostName': set([u'test.domain.com']),
- 'requestFileName': set([u'/agilefant/editIteration.action',
-                         u'/agilefant/login.jsp',
-                         u'/agilefant/static/css/main.css',
-                         u'/agilefant/static/img/agilefant-logo-80px.png',
-                         u'/agilefant/static/img/login_gradient.png',
-                         u'/agilefant/static/img/ui/ui-bg_gloss-wave_55_5c9ccc_500x100.png',
-                         u'/agilefant/static/img/ui/ui-bg_inset-hard_100_fcfdfd_1x100.png',
-                         u'/agilefant/static/js/backlogChooser.js',
-                         u'/agilefant/static/js/backlogSelector.js',
-                         u'/agilefant/static/js/date.js',
-                         u'/agilefant/static/js/jquery-ui.min.js',
-                         u'/agilefant/static/js/jquery.cookie.js',
-                         u'/agilefant/static/js/jquery.dynatree.js',
-                         u'/agilefant/static/js/jquery.hotkeys.js',
-                         u'/agilefant/static/js/jquery.js',
-                         u'/agilefant/static/js/jquery.wysiwyg.js']),
- ('payloadContainer', 'ruleId'): set([(u'REQUEST_HEADERS:Host', u'960017'),
-                                      (u'TX:anomaly_score', u'981174'),
-                                      (u'TX:inbound_anomaly_score',
-                                       u'981203')])}
-{'hostName': set([u'test.domain.com']),
- 'payloadContainer': set([u'TX:sqli_select_statement_count']),
- 'requestFileName': set([u'/agilefant/static/js/backlogSelector.js']),
- 'ruleId': set([u'981317'])}
+hostName = test.domain.com
+        requestFileName = /agilefant/editIteration.action, /agilefant/login.jsp, /agilefant/static/css/main.css, /agilefant/static/img/agilefant-logo-80px.png, /agilefant/static/img/login_gradient.png, /agilefant/static/img/ui/ui-bg_gloss-wave_55_5c9ccc_500x100.png, /agilefant/static/img/ui/ui-bg_inset-hard_100_fcfdfd_1x100.png, /agilefant/static/js/backlogChooser.js, /agilefant/static/js/backlogSelector.js, /agilefant/static/js/date.js, /agilefant/static/js/jquery-ui.min.js, /agilefant/static/js/jquery.cookie.js, /agilefant/static/js/jquery.dynatree.js, /agilefant/static/js/jquery.hotkeys.js, /agilefant/static/js/jquery.js, /agilefant/static/js/jquery.wysiwyg.js
+                ruleId = 960017
+                        payloadContainer = REQUEST_HEADERS:Host
+                ruleId = 981174
+                        payloadContainer = TX:anomaly_score
+                ruleId = 981203
+                        payloadContainer = TX:inbound_anomaly_score
+        ruleId = 981317
+                requestFileName = /agilefant/static/js/backlogSelector.js
+                        payloadContainer = TX:sqli_select_statement_count
+
 """
 
     def setUp(self):

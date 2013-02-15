@@ -9,6 +9,7 @@
 
 from contracts import contract
 from synthetic.decorators import synthesizeConstructor, synthesizeMember
+import copy
 
 @synthesizeConstructor()
 class Correlation:
@@ -42,62 +43,121 @@ class Correlation:
             self._subCorrelationList.append(correlation)
             return
 
-        # @todo ...checking that sub correlation have the same domain.
+        # Making a list of variables that can be merged between the last and the new correlation.
+        previousCorrelation = self._subCorrelationList[-1]
+        previousCorrelationTrunkVariableDict = previousCorrelation._mergeableVariableDict()
+        previousCorrelationSubCorrelationList = previousCorrelation._unmergeableSubCorrelationList()
+        lastCorrelationTrunkVariableDict = correlation._mergeableVariableDict()
+        lastCorrelationSubCorrelationList = correlation._unmergeableSubCorrelationList()
+        
+        
+        # Common variables.
+        commonVariableDict = {}
+        for variableName, variableValueSet in previousCorrelationTrunkVariableDict.items():
+            if lastCorrelationTrunkVariableDict.get(variableName, None) == variableValueSet:
+                commonVariableDict[variableName] = variableValueSet
+        
+        # List of distinct variables between the two correlations trunks.
+        distinctVariableNameList = list(set(previousCorrelationTrunkVariableDict.keys())\
+                                        .union(set(lastCorrelationTrunkVariableDict.keys()))
+                                        - set(commonVariableDict.keys()))
 
-        # ...otherwise.
-        lastCorrelation = self._subCorrelationList[-1]
-        if not lastCorrelation._hasOnlyOneBranch() or not correlation._hasOnlyOneBranch():
-            self._subCorrelationList.append(correlation)
-            return
-        
-        # Listing similar and different variables.
-        lastVariableDict = lastCorrelation._variableDict()
-        currentVariableDict = correlation._variableDict()
-        
-        lastKeyList = list(lastVariableDict.keys())
-        currentKeyList = list(currentVariableDict.keys())
-        lastKeyList.sort()
-        currentKeyList.sort()
-        if lastKeyList != currentKeyList:
-            raise Exception()
-        
-        similarVariableNameList = []
-        differentVariableNameList = []
-        for key in lastVariableDict.keys():
-            if currentVariableDict[key] == lastVariableDict[key]:
-                similarVariableNameList.append(key)
-            else:
-                differentVariableNameList.append(key)
-        
-        # Merging different variable (if there's only one)
-        subCorrelationList = []
-        if len(differentVariableNameList) == 1:
-            key = differentVariableNameList[0]
-            valueSet = currentVariableDict[key].union(lastVariableDict[key])
-            subCorrelationList.append(Correlation(key,
-                                                  variableValueSet = valueSet))
+        # There's only one variable that differs, we merge the values.        
+        if len(previousCorrelationSubCorrelationList) == 0 \
+           and len(lastCorrelationSubCorrelationList) == 0 \
+           and len(distinctVariableNameList) == 1:
+            variableName = distinctVariableNameList[0]
+            variableValueSet = previousCorrelationTrunkVariableDict[variableName]\
+                               .union(lastCorrelationTrunkVariableDict[variableName])
+            subCorrelationList = self._variableDictToCorrelationTreeList({variableName: variableValueSet})
+            
+        # Otherwise we add the branches.
+        else:
+            for variableName in commonVariableDict:
+                del previousCorrelationTrunkVariableDict[variableName]
+                del lastCorrelationTrunkVariableDict[variableName]
+            
+            subCorrelationList = []
+            subCorrelationList += self._variableDictToCorrelationTreeList(previousCorrelationTrunkVariableDict,
+                                                                          subCorrelationList = previousCorrelationSubCorrelationList)
+            subCorrelationList += self._variableDictToCorrelationTreeList(lastCorrelationTrunkVariableDict,
+                                                                          subCorrelationList = lastCorrelationSubCorrelationList)
 
-        elif len(differentVariableNameList) > 1:
-            lastCorrelationChildrenList = []
-            currentCorrelationChildrenList = []
-            for key in differentVariableNameList:
-                lastCorrelation = Correlation(key,
-                                              variableValueSet = lastVariableDict[key],
-                                              subCorrelationList = lastCorrelationChildrenList)
-                lastCorrelationChildrenList = [lastCorrelation]
-
-                currentCorrelation = Correlation(key,
-                                                 variableValueSet = currentVariableDict[key],
-                                                 subCorrelationList = currentCorrelationChildrenList)
-                currentCorrelationChildrenList = [currentCorrelation]
-            subCorrelationList =  lastCorrelationChildrenList + currentCorrelationChildrenList
-        
-        for key in similarVariableNameList:
-            subCorrelationList = [Correlation(key,
-                                              variableValueSet = currentVariableDict[key],
-                                              subCorrelationList = subCorrelationList)]
+        # Make correlation with common variables.
+        subCorrelationList = self._variableDictToCorrelationTreeList(commonVariableDict, subCorrelationList)
         del self._subCorrelationList[-1]
         self._subCorrelationList.extend(subCorrelationList)
+
+    def _mergeableVariableDict(self):
+        """
+Example:
+    a = a1
+            b = b1, b2
+                    c = c1
+                        d = d2
+                    d = d1
+                        c = c2
+
+Will return:
+
+    {'a': 'a1', 'b': set(['b1', 'b2'])}
+"""
+        mergeableVariableDict = {self._variableName: self._variableValueSet}
+        
+        # We fillup the dictionary recursively until there are no children or there's more than one child.
+        if len(self._subCorrelationList) == 1:
+            childMergeableVariableDict = self._subCorrelationList[0]._mergeableVariableDict()
+            mergeableVariableDict.update(childMergeableVariableDict)
+        return mergeableVariableDict
+    
+    def _unmergeableSubCorrelationList(self):
+        """
+Example:
+    a = a1
+            b = b1, b2
+                    c = c1
+                        d = d2
+                    d = d1
+                        c = c2
+
+Will return two correlation objects corresponding to the following structures:
+    
+    c = c1
+        d = d2
+and
+    d = d1
+        c = c2
+"""
+        subCorrelationListLength = len(self._subCorrelationList)
+        
+        # Node has no children.
+        if subCorrelationListLength == 0:
+            return []
+        
+        # Node has only one child, we ask the child.
+        elif subCorrelationListLength == 1:
+            return self._subCorrelationList[0]._unmergeableSubCorrelationList()
+        
+        # Node has multiple children, those are the unmergeable correlations.
+        else:
+            return copy.copy(self._subCorrelationList)
+
+    @contract
+    def _variableDictToCorrelationTreeList(self, variableDict, subCorrelationList = None):
+        """
+    :type variableDict: dict(str:)
+"""
+        correlation = None
+        for variableName, variableValueSet in reversed(variableDict.items()):
+            correlation = Correlation(variableName,
+                                      variableValueSet = variableValueSet,
+                                      subCorrelationList = subCorrelationList)
+            subCorrelationList = [correlation]
+
+        if correlation is not None:
+            return [correlation]
+        else:
+            return subCorrelationList
 
     def __repr__(self, indent = u""):
         variableValueList = list(self._variableValueSet)
@@ -107,24 +167,3 @@ class Correlation:
         for subCorrelation in self._subCorrelationList:
             reprString += subCorrelation.__repr__(indent + u"        ")
         return reprString
-
-    def _hasOnlyOneBranch(self):
-        subCorrelationCount = len(self._subCorrelationList)
-        if subCorrelationCount == 0:
-            return True
-        elif subCorrelationCount > 1:
-            return False
-        else:
-            return self._subCorrelationList[0]._hasOnlyOneBranch()
-
-    def _variableDict(self):
-        subCorrelationCount = len(self._subCorrelationList)
-        if subCorrelationCount == 0:
-            return {self._variableName: self._variableValueSet}
-        elif subCorrelationCount > 1:
-            raise Exception()
-        else:
-            variableDict = self._subCorrelationList[0]._variableDict()
-            variableDict[self._variableName] = self._variableValueSet
-            return variableDict
-        
