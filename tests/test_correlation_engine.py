@@ -109,20 +109,20 @@ class TestModsecurityAuditCorrelationEngine(unittest.TestCase):
         correlationList = map(lambda correlation: repr(correlation), correlationEngine.correlate(dataSource))
         self.assertEqual(self._EXPECTED_CORRELATION_LIST, correlationList)
         
-        self.assertEqual([call.progress(160, 545),
-                          call.progress(320, 545),
-                          call.progress(480, 545),
-                          call.progress(484, 545),
-                          call.progress(500, 545),
-                          call.progress(516, 545),
-                          call.progress(532, 545),
-                          call.progress(534, 545),
-                          call.progress(536, 545),
-                          call.progress(537, 545),
-                          call.progress(539, 545),
-                          call.progress(541, 545),
-                          call.progress(543, 545),
-                          call.progress(545, 545)],
+        self.assertEqual([call.progress(217, 723),
+                          call.progress(434, 723),
+                          call.progress(651, 723),
+                          call.progress(656, 723),
+                          call.progress(674, 723),
+                          call.progress(692, 723),
+                          call.progress(710, 723),
+                          call.progress(712, 723),
+                          call.progress(714, 723),
+                          call.progress(715, 723),
+                          call.progress(717, 723),
+                          call.progress(719, 723),
+                          call.progress(721, 723),
+                          call.progress(723, 723)],
                          progressListener.mock_calls)
 
     def testCorrelateWithIgnoredVariableDict(self):

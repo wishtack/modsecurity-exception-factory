@@ -85,7 +85,7 @@ hostName = test.domain.com
         CommandModsecurityExceptionFactory().main([u"-i", MODSECURITY_AUDIT_LOG_SAMPLE_PATH,
                                                    u"-d", MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL])
         self.assertEqual(self._EXPECTED_OUTPUT, sys.stdout.getvalue())
-        self.assertEqual(u"\r 29.36% (160/545)\r 58.72% (320/545)\r 88.07% (480/545)\r 88.81% (484/545)\r 91.74% (500/545)\r 94.68% (516/545)\r 97.61% (532/545)\r 97.98% (534/545)\r 98.35% (536/545)\r 98.53% (537/545)\r 98.90% (539/545)\r 99.27% (541/545)\r 99.63% (543/545)\r100.00% (545/545)",
+        self.assertEqual(u"\r 30.01% (217/723)\r 60.03% (434/723)\r 90.04% (651/723)\r 90.73% (656/723)\r 93.22% (674/723)\r 95.71% (692/723)\r 98.20% (710/723)\r 98.48% (712/723)\r 98.76% (714/723)\r 98.89% (715/723)\r 99.17% (717/723)\r 99.45% (719/723)\r 99.72% (721/723)\r100.00% (723/723)",
                          sys.stderr.getvalue())
 
     @patch('modsecurity_exception_factory.correlation.correlation_progress_listener_console.CorrelationProgressListenerConsole.progress')

@@ -45,8 +45,6 @@ Yields :class:Correlation objects.
         # Removing items matching 'ignoredVariableDict'.
         itemDictIterable = self._removeItemsMatchingIgnoredVariableDict(itemDictIterable)
         
-        itemDictIterable = itemDictIterable.distinct()
-        
         # Initialize counters.
         self._count = 0
         self._totalCount = len(itemDictIterable)
@@ -108,7 +106,7 @@ Yields :class:Correlation objects.
 
     def _mostFrequentVariableValueSet(self, itemDictIterable, variableNameList):
         correlationDict = {}
-        mostFrequentVariableNameAndValue = itemDictIterable.mostFrequentVariableAndValue(variableNameList)
+        mostFrequentVariableNameAndValue = itemDictIterable.distinct().mostFrequentVariableAndValue(variableNameList)
         if mostFrequentVariableNameAndValue is None:
             return None
         
