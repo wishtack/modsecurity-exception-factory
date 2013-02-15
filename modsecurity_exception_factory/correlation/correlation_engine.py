@@ -7,8 +7,8 @@
 # $Id$
 #
 
+from .correlation import Correlation
 from contracts import contract
-from modsecurity_exception_factory.correlation.correlation import Correlation
 import copy
 
 class ImpossibleError(Exception):
@@ -30,8 +30,8 @@ class CorrelationEngine:
     
     @contract
     def correlate(self, dataSource, minimumOccurrenceCountThreshold = 0):
-        """Yields correlations as dict objects.
-The dict keys are variables' names and the values are set objects containing variables' values.
+        """
+Yields :class:Correlation objects.
     :type minimumOccurrenceCountThreshold: int
 """
         itemDictIterable = dataSource.itemDictIterable(self._variableNameList)

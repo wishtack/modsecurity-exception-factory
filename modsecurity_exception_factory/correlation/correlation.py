@@ -13,6 +13,10 @@ import copy
 
 @synthesizeConstructor()
 class Correlation:
+    """
+A correlation is a tree-chained object. Each correlation object a.k.a. node, contains a variable name, a set of variable values
+corresponding to the variable name and a list of children nodes called subcorrelations.
+"""
 
     @contract
     def __init__(self, variableName, variableValue = None, variableValueSet = None, subCorrelationList = None):
@@ -145,7 +149,13 @@ and
     @contract
     def _variableDictToCorrelationTreeList(self, variableDict, subCorrelationList = None):
         """
+This will make a correlation with every item from :param:variableDict and chain them
+(the first item will be the root correlation node and the last one will be the leaf correlation node).
+If :param:subCorrelationList is not None, the last correlation will use it as it's children.
+Returns a list containing the root correlation node but if there's no item in :param:variableDict,
+this will return :param:subCorrelationList.
     :type variableDict: dict(str:)
+    :type subCorrelationList: list|None
 """
         correlation = None
         for variableName, variableValueSet in reversed(variableDict.items()):

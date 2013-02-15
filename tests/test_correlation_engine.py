@@ -7,12 +7,14 @@
 # $Id$
 #
 
-from modsecurity_exception_factory.modsecurity_audit_correlator import ModsecurityAuditCorrelator
+from modsecurity_exception_factory.correlation.correlation_engine import \
+    CorrelationEngine
 from modsecurity_exception_factory.modsecurity_audit_data_source.modsecurity_audit_data_source_sql import \
     ModsecurityAuditDataSourceSQL
 from modsecurity_exception_factory.modsecurity_audit_log_parser.modsecurity_audit_log_parser import \
     ModsecurityAuditLogParser
-from tests.common import MODSECURITY_AUDIT_LOG_SAMPLE_PATH, cleanUp, MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL
+from tests.common import MODSECURITY_AUDIT_LOG_SAMPLE_PATH, cleanUp, \
+    MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL
 import io
 import unittest
 
@@ -72,6 +74,8 @@ class TestModsecurityAuditCorrelationEngine(unittest.TestCase):
                         payloadContainer = ARGS:a, ARGS:b
 """]
 
+    _VARIABLE_NAME_LIST = ['hostName', 'requestFileName', 'payloadContainer', 'ruleId']
+
     def setUp(self):
         cleanUp()
         self._fillupDataSource()
@@ -91,7 +95,8 @@ class TestModsecurityAuditCorrelationEngine(unittest.TestCase):
         # Fillup database.
         dataSource = ModsecurityAuditDataSourceSQL(MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL)
 
-        correlationList = map(lambda correlation: repr(correlation), ModsecurityAuditCorrelator().correlate(dataSource))
+        correlationEngine = CorrelationEngine(self._VARIABLE_NAME_LIST)
+        correlationList = map(lambda correlation: repr(correlation), correlationEngine.correlate(dataSource))
         self.assertEqual(self._EXPECTED_CORRELATION_LIST, correlationList)
 
     def testCorrelateWithIgnoredVariableDict(self):
@@ -101,5 +106,6 @@ class TestModsecurityAuditCorrelationEngine(unittest.TestCase):
         ignoredVariableDict = {'hostName': [u"1.1.1.1"],
                                'ruleId': [u"111111", u"981174"]}
         
-        correlationList = map(lambda correlation: repr(correlation), ModsecurityAuditCorrelator().correlate(dataSource, ignoredVariableDict))
+        correlationEngine = CorrelationEngine(self._VARIABLE_NAME_LIST, ignoredVariableDict)
+        correlationList = map(lambda correlation: repr(correlation), correlationEngine.correlate(dataSource))
         self.assertEqual(self._EXPECTED_CORRELATION_LIST_WITH_IGNORED_VARIABLE_DICT, correlationList)

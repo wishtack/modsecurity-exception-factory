@@ -19,7 +19,7 @@ import unittest
 
 class TestCommandModsecurityExceptionFactory(unittest.TestCase):
 
-    _TEST_CONFIG_FILE_PATH = testFilePath(u"data/test.yaml")
+    _TEST_CONFIG_FILE_PATH = testFilePath(u"data/test_command_modsecurity_exception_factory.yaml")
 
     _EXPECTED_OUTPUT = """\
 hostName = 1.1.1.1
