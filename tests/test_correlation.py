@@ -136,14 +136,14 @@ After merging, the following correlation tree:
 
         # a1 -> b4 -> c5
         c5 = Correlation('c', u"c5")
-        c5.addSubCorrelation(d5)
+        c5._addSubCorrelation(d5)
 
         # a1 -> b4 -> c6 -> d6
         d6 = Correlation('d', u"d6")
 
         # a1 -> b4 -> c6
         c6 = Correlation('c', u"c6")
-        c6.addSubCorrelation(d6)
+        c6._addSubCorrelation(d6)
 
         # a1 -> b4
         b4 = Correlation('b', u"b4")
@@ -154,11 +154,11 @@ After merging, the following correlation tree:
         
         # a1 -> d7 -> c7
         c7 = Correlation('c', u"c7")
-        c7.addSubCorrelation(b4_2)
+        c7._addSubCorrelation(b4_2)
         
         # a1 -> d7
         d7 = Correlation('d', u"d7")
-        d7.addSubCorrelation(c7)
+        d7._addSubCorrelation(c7)
         
         # a1
         a1 = Correlation('a', u"a1")

@@ -9,10 +9,12 @@
 
 from .correlation import Correlation
 from .i_correlation_progress_listener import ICorrelationProgressListener
+from .i_item_data_source import IItemDataSource
 from contracts import contract, new_contract
 import copy
 
 new_contract('ICorrelationProgressListener', ICorrelationProgressListener)
+new_contract('IItemDataSource', IItemDataSource)
 
 class ImpossibleError(Exception):
     def __init__(self):
@@ -23,22 +25,24 @@ class CorrelationEngine:
     _EMPTY_ATTRIBUTE_VALUE = '~'
 
     @contract
-    def __init__(self, variableNameList, ignoredVariableDict = {}):
+    def __init__(self, variableNameList, ignoredVariableDict = {}, minimumOccurrenceCountThreshold = 0):
         """
     :type variableNameList: list(str)
     :type ignoredVariableDict: dict(str:list(unicode))
+    :type minimumOccurrenceCountThreshold: int
 """
         self._variableNameList = variableNameList
         self._ignoredVariableDict = ignoredVariableDict
+        self._minimumOccurrenceCountThreshold = minimumOccurrenceCountThreshold
         self._progressListenerList = []
         self._count = 0
         self._totalCount = 0
     
     @contract
-    def correlate(self, dataSource, minimumOccurrenceCountThreshold = 0):
+    def correlate(self, dataSource):
         """
 Yields :class:Correlation objects.
-    :type minimumOccurrenceCountThreshold: int
+    :type dataSource: IItemDataSource
 """
         itemDictIterable = dataSource.itemDictIterable(self._variableNameList)
         
@@ -65,7 +69,10 @@ Yields :class:Correlation objects.
                 itemDictIterable = itemDictIterable.filterByVariable(variableName, variableValue, negate = True)
         return itemDictIterable
 
-    def _correlationIterable(self, itemDictIterable, variableNameList):
+    def _correlationIterable(self, itemDictIterable, variableNameList, depth = 0):
+        import sys
+        sys.stderr.write("\n%s%d\n" % ("\t" * depth, len(itemDictIterable)))
+        
         # Merge all values when there's only one variable remaining.
         if len(variableNameList) == 1:
             # Variable name.
@@ -84,6 +91,9 @@ Yields :class:Correlation objects.
 
             # Select data that matches rule.
             matchingItemDictIterable = itemDictIterable.filterByVariable(variableName, variableValue)
+            if len(matchingItemDictIterable) < self._minimumOccurrenceCountThreshold:
+                break
+
             itemDictIterable = itemDictIterable.filterByVariable(variableName, variableValue, negate = True)
 
             # Data has already been consumed by other rules.
@@ -97,12 +107,13 @@ Yields :class:Correlation objects.
             # ... otherwise, we must continue...
             correlation = Correlation(variableName, variableValue)
             correlation.extendSubCorrelation(self._correlationIterable(matchingItemDictIterable,
-                                                                       remainingVariableNameList))
+                                                                       remainingVariableNameList,
+                                                                       depth + 1))
             yield correlation
             mostFrequentVariableNameAndValue = itemDictIterable.mostFrequentVariableAndValue(variableNameList)
         
-        if len(itemDictIterable) > 0:
-            raise ImpossibleError()
+#        if len(itemDictIterable) > 0:
+#            raise ImpossibleError()
 
     def _mostFrequentVariableValueSet(self, itemDictIterable, variableNameList):
         correlationDict = {}

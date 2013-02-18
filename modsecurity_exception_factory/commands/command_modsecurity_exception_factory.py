@@ -67,7 +67,9 @@ class CommandModsecurityExceptionFactory:
             self._parseFile(argumentObject.modsecurityAuditLogPath, dataSource)
 
         # Correlate.
-        correlationEngine = CorrelationEngine(variableNameList, ignoredVariableDict)
+        correlationEngine = CorrelationEngine(variableNameList,
+                                              ignoredVariableDict,
+                                              minimumOccurrenceCountThreshold = 100)
         correlationEngine.addProgressListener(CorrelationProgressListenerConsole(sys.stderr))
         for correlation in correlationEngine.correlate(dataSource):
             print(correlation)
