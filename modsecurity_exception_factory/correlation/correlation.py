@@ -39,9 +39,9 @@ corresponding to the variable name and a list of children nodes called subcorrel
 
     def extendSubCorrelation(self, correlationIterable):
         for correlation in correlationIterable:
-            self.addSubCorrelation(correlation)
+            self._addSubCorrelation(correlation)
 
-    def addSubCorrelation(self, correlation):
+    def _addSubCorrelation(self, correlation):
         # First sub correlation...
         if len(self._subCorrelationList) == 0:
             self._subCorrelationList.append(correlation)

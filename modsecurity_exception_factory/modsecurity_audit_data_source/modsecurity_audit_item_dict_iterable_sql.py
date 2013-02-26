@@ -7,13 +7,11 @@
 # $Id$
 #
 
+from contextlib import closing
 from contracts import contract, new_contract
-from modsecurity_exception_factory.correlation.i_item_iterable import \
-    IItemIterable
-from modsecurity_exception_factory.modsecurity_audit_data_source.sql_filter import \
-    SQLFilter
-from modsecurity_exception_factory.modsecurity_audit_data_source.sql_filter_condition import \
-    SQLFilterCondition
+from modsecurity_exception_factory.correlation.i_item_iterable import IItemIterable
+from modsecurity_exception_factory.modsecurity_audit_data_source.sql_filter import SQLFilter
+from modsecurity_exception_factory.modsecurity_audit_data_source.sql_filter_condition import SQLFilterCondition
 from modsecurity_exception_factory.modsecurity_audit_data_source.sql_modsecurity_audit_entry_message import \
     SQLModsecurityAuditEntryMessage
 from sqlalchemy.orm.session import sessionmaker
@@ -22,7 +20,6 @@ from sqlalchemy.sql.functions import count
 from synthetic.decorators import synthesizeMember, synthesizeConstructor
 import copy
 
-new_contract('sessionmaker', sessionmaker)
 new_contract('SQLFilterCondition', SQLFilterCondition)
 
 class EmptyVariableNameListError(Exception):
@@ -38,7 +35,6 @@ class ModsecurityAuditItemDictIterableSQL(IItemIterable):
     @contract
     def __init__(self, sessionMaker, variableNameList, distinct = False, sqlFilterConditionListDict = None):
         """
-    :type sessionMaker: sessionmaker
     :type variableNameList: list(str)
     :type distinct: bool
     :type sqlFilterConditionListDict: dict(tuple:list(SQLFilterCondition))|None
@@ -57,7 +53,7 @@ class ModsecurityAuditItemDictIterableSQL(IItemIterable):
         return _ModsecurityAuditItemDictIteratorSQL(self._generator())
 
     def __len__(self):
-        with self._sessionMaker() as session:
+        with closing(self._sessionMaker()) as session:
             return self._makeQuery(session).count()
     
     def distinct(self):
@@ -106,7 +102,7 @@ class ModsecurityAuditItemDictIterableSQL(IItemIterable):
         if len(variableNameList) == 0:
             raise EmptyVariableNameListError()
 
-        with self._sessionMaker() as session:
+        with closing(self._sessionMaker()) as session:
             # For each variable, retrieve all possible values and their occurrence count.
             for variableName in variableNameList:
                 variableNameColumn = literal(variableName).label(self._VARIABLE_NAME_KEY)
@@ -131,7 +127,7 @@ class ModsecurityAuditItemDictIterableSQL(IItemIterable):
                 return None
 
     def _generator(self):
-        with self._sessionMaker() as session:
+        with closing(self._sessionMaker()) as session:
             for item in self._makeQuery(session):
                 itemDict = {}
                 for variableName in self._variableNameList:
@@ -177,7 +173,7 @@ class ModsecurityAuditItemDictIterableSQL(IItemIterable):
 
             # If it's a negation, we create one 'NOT IN' query filter for all values.
             if negate:
-                with self._sessionMaker() as session:
+                with closing(self._sessionMaker()) as session:
                     # Now we store the filter and it's variables in the database before using them through sub queries.
                     sqlFilterObject = SQLFilter(conditionList = sqlFilterConditionList)
                     session.add(sqlFilterObject)

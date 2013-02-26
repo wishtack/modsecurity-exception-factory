@@ -7,3 +7,5 @@ variables:
     - aaa
     - bbb
     - ccc
+
+minimumOccurrenceCountThreshold: 10

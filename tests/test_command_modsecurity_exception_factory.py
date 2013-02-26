@@ -72,11 +72,9 @@ hostName = test.domain.com
 """
 
     def setUp(self):
-        # Backup stdout.
         cleanUp()
     
     def tearDown(self):
-        # Restore stdout.
         cleanUp()
 
     @patch('sys.stderr', StringIO())
