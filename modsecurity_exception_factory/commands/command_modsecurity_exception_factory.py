@@ -73,7 +73,7 @@ class CommandModsecurityExceptionFactory:
                                               minimumOccurrenceCountThreshold)
         correlationEngine.addProgressListener(CorrelationProgressListenerConsole(sys.stderr))
         for correlation in correlationEngine.correlate(dataSource):
-            print(correlation)
+            print(unicode(correlation).encode(sys.stdout.encoding, errors = 'replace'))
     
         return 0
 

@@ -80,6 +80,7 @@ hostName = test.domain.com
     @patch('sys.stderr', StringIO())
     @patch('sys.stdout', StringIO())
     def testOK(self):
+        sys.stdout.encoding = 'utf-8'
         CommandModsecurityExceptionFactory().main([u"-i", MODSECURITY_AUDIT_LOG_SAMPLE_PATH,
                                                    u"-d", MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL])
         self.assertEqual(self._EXPECTED_OUTPUT, sys.stdout.getvalue())
@@ -89,6 +90,7 @@ hostName = test.domain.com
     @patch('modsecurity_exception_factory.correlation.correlation_progress_listener_console.CorrelationProgressListenerConsole.progress')
     @patch('sys.stdout', StringIO())
     def testWithIgnoredVariableDict(self, *args):
+        sys.stdout.encoding = 'utf-8'
         CommandModsecurityExceptionFactory().main([u"-i", MODSECURITY_AUDIT_LOG_SAMPLE_PATH,
                                                    u"-d", MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL,
                                                    u"-c", self._TEST_CONFIG_FILE_PATH])
@@ -97,12 +99,15 @@ hostName = test.domain.com
     @patch('modsecurity_exception_factory.correlation.correlation_progress_listener_console.CorrelationProgressListenerConsole.progress')
     @patch('sys.stdout', StringIO())
     def testDataSourceReuse(self, *args):
+        sys.stdout.encoding = 'utf-8'
+
         # This will create the data source.
         CommandModsecurityExceptionFactory().main([u"-i", MODSECURITY_AUDIT_LOG_SAMPLE_PATH,
                                                    u"-d", MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL])
 
         # Reset the buffer.            
         sys.stdout = StringIO()
+        sys.stdout.encoding = 'utf-8'
                 
         # Reuse the data source.
         CommandModsecurityExceptionFactory().main([u"-d", MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL])
