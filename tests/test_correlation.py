@@ -68,119 +68,101 @@ After merging, the following correlation tree:
                         d = d7
 """
         # a1 -> b1 -> c1
-        c1 = Correlation('c', u"c1")
-        c1.extendSubCorrelation([Correlation('d', u"d1"),
-                                 Correlation('d', u"d2"),
-                                 Correlation('d', u"d3"),
-                                 Correlation('d', u"d4")])
+        c1 = Correlation('c', {u"c1"}, [Correlation('d', {u"d1"}, itemCount = 10),
+                                      Correlation('d', {u"d2"}, itemCount = 10),
+                                      Correlation('d', {u"d3"}, itemCount = 10),
+                                      Correlation('d', {u"d4"}, itemCount = 10)])
 
         # a1 -> b1 -> c2
-        c2 = Correlation('c', u"c2")
-        c2.extendSubCorrelation([Correlation('d', u"d1"),
-                                 Correlation('d', u"d2"),
-                                 Correlation('d', u"d3")])
+        c2 = Correlation('c', {u"c2"}, [Correlation('d', {u"d1"}, itemCount = 10),
+                                      Correlation('d', {u"d2"}, itemCount = 10),
+                                      Correlation('d', {u"d3"}, itemCount = 10)])
 
         # a1 -> b1 -> c4
-        c4 = Correlation('c', u"c4")
-        c4.extendSubCorrelation([Correlation('d', u"d1"),
-                                 Correlation('d', u"d2"),
-                                 Correlation('d', u"d3")])
+        c4 = Correlation('c', {u"c4"}, [Correlation('d', {u"d1"}, itemCount = 10),
+                                      Correlation('d', {u"d2"}, itemCount = 10),
+                                      Correlation('d', {u"d3"}, itemCount = 10)])
 
         # a1 -> b1 -> c3
-        c3 = Correlation('c', u"c3")
-        c3.extendSubCorrelation([Correlation('d', u"d1"),
-                                 Correlation('d', u"d2"),
-                                 Correlation('d', u"d3")])
+        c3 = Correlation('c', {u"c3"}, [Correlation('d', {u"d1"}, itemCount = 10),
+                                      Correlation('d', {u"d2"}, itemCount = 10),
+                                      Correlation('d', {u"d3"}, itemCount = 10)])
 
         # a1 -> b1   
-        b1 = Correlation('b', u"b1")
-        b1.extendSubCorrelation([c1, c2, c4, c3])
+        b1 = Correlation('b', {u"b1"}, [c1, c2, c4, c3])
 
         # a1 -> b2 -> c1
-        c1 = Correlation('c', u"c1")
-        c1.extendSubCorrelation([Correlation('d', u"d1"),
-                                 Correlation('d', u"d2"),
-                                 Correlation('d', u"d3")])
+        c1 = Correlation('c', {u"c1"}, [Correlation('d', {u"d1"}, itemCount = 10),
+                                      Correlation('d', {u"d2"}, itemCount = 10),
+                                      Correlation('d', {u"d3"}, itemCount = 10)])
 
         # a1 -> b2 -> c2
-        c2 = Correlation('c', u"c2")
-        c2.extendSubCorrelation([Correlation('d', u"d1"),
-                                 Correlation('d', u"d2"),
-                                 Correlation('d', u"d3")])
+        c2 = Correlation('c', {u"c2"}, [Correlation('d', {u"d1"}, itemCount = 10),
+                                      Correlation('d', {u"d2"}, itemCount = 10),
+                                      Correlation('d', {u"d3"}, itemCount = 10)])
 
         # a1 -> b2
-        b2 = Correlation('b', u"b2")
-        b2.extendSubCorrelation([c1, c2])
+        b2 = Correlation('b', {u"b2"}, [c1, c2])
 
         # a1 -> b3 -> d1
-        d1 = Correlation('d', u"d1")
-        d1.extendSubCorrelation([Correlation('c', u"c1"),
-                                 Correlation('c', u"c2")])
+        d1 = Correlation('d', {u"d1"}, [Correlation('c', {u"c1"}, itemCount = 10),
+                                      Correlation('c', {u"c2"}, itemCount = 10)])
 
         # a1 -> b3 -> d2
-        d2 = Correlation('d', u"d2")
-        d2.extendSubCorrelation([Correlation('c', u"c1"),
-                                 Correlation('c', u"c2")])
+        d2 = Correlation('d', {u"d2"}, [Correlation('c', {u"c1"}, itemCount = 10),
+                                      Correlation('c', {u"c2"}, itemCount = 10)])
 
         # a1 -> b3 -> d3
-        d3 = Correlation('d', u"d3")
-        d3.extendSubCorrelation([Correlation('c', u"c1"),
-                                 Correlation('c', u"c2")])
+        d3 = Correlation('d', {u"d3"}, [Correlation('c', {u"c1"}, itemCount = 10),
+                                      Correlation('c', {u"c2"}, itemCount = 10)])
         
         # a1 -> b3
-        b3 = Correlation('b', u"b3")
-        b3.extendSubCorrelation([d1, d2, d3])
+        b3 = Correlation('b', {u"b3"}, [d1, d2, d3])
 
         # a1 -> b4 -> c5 -> d5
-        d5 = Correlation('d', u"d5")
+        d5 = Correlation('d', {u"d5"}, itemCount = 10)
 
         # a1 -> b4 -> c5
-        c5 = Correlation('c', u"c5")
-        c5._addSubCorrelation(d5)
+        c5 = Correlation('c', {u"c5"}, [d5])
 
         # a1 -> b4 -> c6 -> d6
-        d6 = Correlation('d', u"d6")
+        d6 = Correlation('d', {u"d6"}, itemCount = 10)
 
         # a1 -> b4 -> c6
-        c6 = Correlation('c', u"c6")
-        c6._addSubCorrelation(d6)
+        c6 = Correlation('c', {u"c6"}, [d6])
 
         # a1 -> b4
-        b4 = Correlation('b', u"b4")
-        b4.extendSubCorrelation([c5, c6])
+        b4 = Correlation('b', {u"b4"}, [c5, c6])
 
         # a1 -> d7 -> c7 -> b4
-        b4_2 = Correlation('b', u"b4")
+        b4_2 = Correlation('b', {u"b4"}, itemCount = 10)
         
         # a1 -> d7 -> c7
-        c7 = Correlation('c', u"c7")
-        c7._addSubCorrelation(b4_2)
+        c7 = Correlation('c', {u"c7"}, [b4_2])
         
         # a1 -> d7
-        d7 = Correlation('d', u"d7")
-        d7._addSubCorrelation(c7)
+        d7 = Correlation('d', {u"d7"}, [c7])
         
         # a1
-        a1 = Correlation('a', u"a1")
-        a1.extendSubCorrelation([b1, b2, b3, b4, d7])
+        a1 = Correlation('a', {u"a1"}, [b1, b2, b3, b4, d7])
         
         self.assertEqual("""\
-a = a1
-        b = b1
-                c = c1
-                        d = d1, d2, d3, d4
-                d = d1, d2, d3
-                        c = c2, c3, c4
-        c = c1, c2
-                b = b2, b3
-                        d = d1, d2, d3
-        b = b4
-                c = c5
-                        d = d5
-                c = c6
-                        d = d6
-                c = c7
-                        d = d7
+a (count=280) = a1
+        b (count=130) = b1
+                c (count=40) = c1
+                        d (count=40) = d1, d2, d3, d4
+                d (count=90) = d1, d2, d3
+                        c (count=90) = c2, c3, c4
+        c (count=120) = c1, c2
+                b (count=120) = b2, b3
+                        d (count=120) = d1, d2, d3
+        b (count=30) = b4
+                c (count=10) = c5
+                        d (count=10) = d5
+                c (count=10) = c6
+                        d (count=10) = d6
+                c (count=10) = c7
+                        d (count=10) = d7
 """, repr(a1))
 
     def testMergeVariableDuplicate(self):

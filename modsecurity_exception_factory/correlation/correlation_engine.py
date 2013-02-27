@@ -76,10 +76,13 @@ Yields :class:Correlation objects.
             variableName = variableNameList[0]
             # Values set.
             variableValueSet = set([d[variableName] for d in itemDictIterable])
+            itemCount = len(itemDictIterable)
             # Increment progress and inform listeners.
-            self._incrementProgress(len(itemDictIterable))
+            self._incrementProgress(itemCount)
             # Correlation leaf is ready.
-            yield Correlation(variableName, variableValueSet = variableValueSet)
+            yield Correlation(variableName,
+                              variableValueSet = variableValueSet,
+                              itemCount = itemCount)
             return
 
         mostFrequentVariableNameAndValue = itemDictIterable.mostFrequentVariableAndValue(variableNameList)
@@ -88,13 +91,14 @@ Yields :class:Correlation objects.
 
             # Select data that matches rule.
             matchingItemDictIterable = itemDictIterable.filterByVariable(variableName, variableValue)
-            if len(matchingItemDictIterable) < self._minimumOccurrenceCountThreshold:
+            matchingItemCount = len(matchingItemDictIterable)
+            if matchingItemCount < self._minimumOccurrenceCountThreshold:
                 break
 
             itemDictIterable = itemDictIterable.filterByVariable(variableName, variableValue, negate = True)
 
             # Data has already been consumed by other rules.
-            if len(matchingItemDictIterable) == 0:
+            if matchingItemCount == 0:
                 raise ImpossibleError()
 
             # List of variables that still have to be defined.
@@ -102,9 +106,10 @@ Yields :class:Correlation objects.
             remainingVariableNameList.remove(variableName)
 
             # ... otherwise, we must continue...
-            correlation = Correlation(variableName, variableValue)
-            correlation.extendSubCorrelation(self._correlationIterable(matchingItemDictIterable,
-                                                                       remainingVariableNameList))
+            correlation = Correlation(variableName,
+                                      variableValueSet = {variableValue},
+                                      subCorrelationIterable = self._correlationIterable(matchingItemDictIterable,
+                                                                                         remainingVariableNameList))
             yield correlation
             mostFrequentVariableNameAndValue = itemDictIterable.mostFrequentVariableAndValue(variableNameList)
 
