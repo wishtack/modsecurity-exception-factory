@@ -52,7 +52,7 @@ class CommandModsecurityExceptionFactory:
                                     default = None)
     
         argumentObject = argumentParser.parse_args(argumentList)
-
+        
         # Try to parse config.
         config = Config(argumentObject.configFilePath)
         variableNameList = config.variableNameList()
@@ -72,8 +72,9 @@ class CommandModsecurityExceptionFactory:
                                               ignoredVariableDict,
                                               minimumOccurrenceCountThreshold)
         correlationEngine.addProgressListener(CorrelationProgressListenerConsole(sys.stderr))
+        
         for correlation in correlationEngine.correlate(dataSource):
-            print(unicode(correlation).encode(sys.stdout.encoding, errors = 'replace'))
+            self._printCorrelation(correlation)
     
         return 0
 
@@ -92,6 +93,12 @@ class CommandModsecurityExceptionFactory:
             modsecurityAuditLogPath = sys.stdin.fileno()
         
         return io.open(modsecurityAuditLogPath, 'rt', errors = 'replace')
+
+    def _printCorrelation(self, correlation):
+        encoding = sys.stdout.encoding
+        if encoding is None:
+            encoding = sys.getdefaultencoding()
+        print(unicode(correlation).encode(encoding, errors = 'replace'))
 
 def main():
     return CommandModsecurityExceptionFactory().main(sys.argv[1:])

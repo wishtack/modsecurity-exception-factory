@@ -109,7 +109,8 @@ Yields :class:Correlation objects.
             correlation = Correlation(variableName,
                                       variableValueSet = {variableValue},
                                       subCorrelationIterable = self._correlationIterable(matchingItemDictIterable,
-                                                                                         remainingVariableNameList))
+                                                                                         remainingVariableNameList),
+                                      itemCount = matchingItemCount)
             yield correlation
             mostFrequentVariableNameAndValue = itemDictIterable.mostFrequentVariableAndValue(variableNameList)
 

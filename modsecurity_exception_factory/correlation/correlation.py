@@ -47,9 +47,6 @@ corresponding to the variable name and a list of children nodes called subcorrel
                     self._addSubCorrelationAndTryToMerge(correlation)
             else:
                 self._subCorrelationList = list(subCorrelationIterable)
-
-        if self._itemCount is None and len(self._subCorrelationList) == 0:
-            raise TypeError("SHIT!")
         
     def itemCount(self):
         if self._itemCount is not None:
