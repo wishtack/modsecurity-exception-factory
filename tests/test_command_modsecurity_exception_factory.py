@@ -4,7 +4,7 @@
 #
 # @author: Younes JAAIDI
 #
-# $Id: $
+# $Id$
 #
 
 from StringIO import StringIO
