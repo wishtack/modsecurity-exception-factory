@@ -8,7 +8,7 @@
 #
 
 from contracts import contract, new_contract
-from modsecurity_exception_factory.config import Config
+from modsecurity_exception_factory.utils import Config
 from modsecurity_exception_factory.correlation.correlation_engine import \
     CorrelationEngine
 from modsecurity_exception_factory.correlation.correlation_progress_listener_console import \
@@ -57,6 +57,7 @@ class CommandModsecurityExceptionFactory:
         config = Config(argumentObject.configFilePath)
         variableNameList = config.variableNameList()
         ignoredVariableDict = config.ignoredVariableDict()
+        minimumOccurrenceCountThreshold = config.minimumOccurrenceCountThreshold()
         
 
         # Initialize data source object.
@@ -69,7 +70,7 @@ class CommandModsecurityExceptionFactory:
         # Correlate.
         correlationEngine = CorrelationEngine(variableNameList,
                                               ignoredVariableDict,
-                                              minimumOccurrenceCountThreshold = 100)
+                                              minimumOccurrenceCountThreshold)
         correlationEngine.addProgressListener(CorrelationProgressListenerConsole(sys.stderr))
         for correlation in correlationEngine.correlate(dataSource):
             print(correlation)

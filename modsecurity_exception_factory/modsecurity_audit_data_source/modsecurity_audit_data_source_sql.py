@@ -12,9 +12,10 @@ from .i_modsecurity_audit_data_source import IModsecurityAuditDataSource
 from .modsecurity_audit_item_dict_iterable_sql import ModsecurityAuditItemDictIterableSQL
 from .sql_base import SQLBase
 from .sql_modsecurity_audit_entry_message import SQLModsecurityAuditEntryMessage
-from .sql_session_maker_for_with_statement import SQLSessionMakerForWithStatement
+from contextlib import closing
 from contracts import contract, new_contract
 from sqlalchemy.engine import create_engine
+from sqlalchemy.orm.session import sessionmaker
 
 new_contract('ModsecurityAuditEntry', ModsecurityAuditEntry)
 new_contract('SQLModsecurityAuditEntryMessage', SQLModsecurityAuditEntryMessage)
@@ -29,7 +30,7 @@ class ModsecurityAuditDataSourceSQL(IModsecurityAuditDataSource):
 """
         self._dataBaseUrl = dataBaseUrl
         self._sqlEngine = create_engine(dataBaseUrl)
-        self._sessionMaker = SQLSessionMakerForWithStatement(bind = self._sqlEngine)
+        self._sessionMaker = sessionmaker(bind = self._sqlEngine)
         self._initialized = False
 
     def insertModsecurityAuditEntryIterable(self, modsecurityAuditEntryIterable):
@@ -85,7 +86,7 @@ class ModsecurityAuditDataSourceSQL(IModsecurityAuditDataSource):
         """
     :type sqlModsecurityAuditEntryMessageBuffer: list(SQLModsecurityAuditEntryMessage)
 """
-        with self._sessionMaker() as session:
+        with closing(self._sessionMaker()) as session:
             session.add_all(sqlModsecurityAuditEntryMessageBuffer)
             session.commit()
         del sqlModsecurityAuditEntryMessageBuffer[:]

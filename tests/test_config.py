@@ -8,7 +8,7 @@
 #
 
 from .common import testFilePath
-from modsecurity_exception_factory.config import Config
+from modsecurity_exception_factory.utils import Config
 import unittest
 
 class TestConfig(unittest.TestCase):
@@ -22,15 +22,18 @@ class TestConfig(unittest.TestCase):
                           'hostName': [u"1.1.1.1"]}, config.ignoredVariableDict())
         self.assertEqual(['aaa', 'bbb', 'ccc'],
                          config.variableNameList())
+        self.assertEqual(10, config.minimumOccurrenceCountThreshold())
 
     def testEmpty(self):
         config = Config(self._TEST_CONFIG_EMPTY)
         self.assertEqual({}, config.ignoredVariableDict())
         self.assertEqual(['hostName', 'requestFileName', 'payloadContainer', 'ruleId'],
                          config.variableNameList())
+        self.assertEqual(0, config.minimumOccurrenceCountThreshold())
 
     def testDefault(self):
         config = Config()
         self.assertEqual({}, config.ignoredVariableDict())
         self.assertEqual(['hostName', 'requestFileName', 'payloadContainer', 'ruleId'],
                          config.variableNameList())
+        self.assertEqual(0, config.minimumOccurrenceCountThreshold())

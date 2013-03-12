@@ -69,10 +69,7 @@ Yields :class:Correlation objects.
                 itemDictIterable = itemDictIterable.filterByVariable(variableName, variableValue, negate = True)
         return itemDictIterable
 
-    def _correlationIterable(self, itemDictIterable, variableNameList, depth = 0):
-        import sys
-        sys.stderr.write("\n%s%d\n" % ("\t" * depth, len(itemDictIterable)))
-        
+    def _correlationIterable(self, itemDictIterable, variableNameList):
         # Merge all values when there's only one variable remaining.
         if len(variableNameList) == 1:
             # Variable name.
@@ -107,13 +104,9 @@ Yields :class:Correlation objects.
             # ... otherwise, we must continue...
             correlation = Correlation(variableName, variableValue)
             correlation.extendSubCorrelation(self._correlationIterable(matchingItemDictIterable,
-                                                                       remainingVariableNameList,
-                                                                       depth + 1))
+                                                                       remainingVariableNameList))
             yield correlation
             mostFrequentVariableNameAndValue = itemDictIterable.mostFrequentVariableAndValue(variableNameList)
-        
-#        if len(itemDictIterable) > 0:
-#            raise ImpossibleError()
 
     def _mostFrequentVariableValueSet(self, itemDictIterable, variableNameList):
         correlationDict = {}
