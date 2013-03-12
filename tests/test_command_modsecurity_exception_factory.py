@@ -8,9 +8,11 @@
 #
 
 from StringIO import StringIO
-from mock import patch
+from mock import call, patch
 from modsecurity_exception_factory.commands.command_modsecurity_exception_factory import \
     CommandModsecurityExceptionFactory
+from modsecurity_exception_factory.correlation.correlation_engine import \
+    CorrelationEngine
 from sqlalchemy.exc import OperationalError
 from tests.common import cleanUp, MODSECURITY_AUDIT_LOG_SAMPLE_PATH, \
     MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL, testFilePath
@@ -96,8 +98,8 @@ hostName (count=55) = test.domain.com
                                                    u"-c", self._TEST_CONFIG_FILE_PATH])
         self.assertEqual(self._EXPECTED_OUTPUT_WTTH_IGNORED_VARIABLE_DICT, sys.stdout.getvalue())
 
-    @patch('modsecurity_exception_factory.correlation.correlation_progress_listener_console.CorrelationProgressListenerConsole.progress')
     @patch('sys.stdout', StringIO())
+    @patch('modsecurity_exception_factory.correlation.correlation_progress_listener_console.CorrelationProgressListenerConsole.progress')
     def testDataSourceReuse(self, *args):
         sys.stdout.encoding = 'utf-8'
 
@@ -112,6 +114,23 @@ hostName (count=55) = test.domain.com
         # Reuse the data source.
         CommandModsecurityExceptionFactory().main([u"-d", MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL])
         self.assertEqual(self._EXPECTED_OUTPUT, sys.stdout.getvalue())
+
+    @patch('sys.stdout', StringIO())
+    @patch('modsecurity_exception_factory.correlation.correlation_progress_listener_console.CorrelationProgressListenerConsole.progress')
+    @patch.object(CorrelationEngine, 'addProgressListener')
+    @patch.object(CorrelationEngine, 'correlate')
+    @patch.object(CorrelationEngine, '__init__', return_value = None)
+    def testConfig(self, mockCorrelationEngineInit, *args):
+        sys.stdout.encoding = 'utf-8'
+
+        CommandModsecurityExceptionFactory().main([u"-i", MODSECURITY_AUDIT_LOG_SAMPLE_PATH,
+                                                   u"-d", MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL,
+                                                   u"-c", self._TEST_CONFIG_FILE_PATH])
+        self.assertEqual([call(['hostName', 'requestFileName', 'payloadContainer', 'ruleId'],
+                               {'hostName': [u'1.1.1.1'], 'ruleId': [u'111111', u'222222', u'333333']},
+                               1,
+                               100)],
+                         mockCorrelationEngineInit.mock_calls)
 
     def testLogPathInvalid(self):
         self.assertRaises(IOError, CommandModsecurityExceptionFactory().main,

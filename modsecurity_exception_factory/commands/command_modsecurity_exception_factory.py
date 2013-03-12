@@ -58,6 +58,7 @@ class CommandModsecurityExceptionFactory:
         variableNameList = config.variableNameList()
         ignoredVariableDict = config.ignoredVariableDict()
         minimumOccurrenceCountThreshold = config.minimumOccurrenceCountThreshold()
+        maximumValueCountThreshold = config.maximumValueCountThreshold()
         
 
         # Initialize data source object.
@@ -70,7 +71,8 @@ class CommandModsecurityExceptionFactory:
         # Correlate.
         correlationEngine = CorrelationEngine(variableNameList,
                                               ignoredVariableDict,
-                                              minimumOccurrenceCountThreshold)
+                                              minimumOccurrenceCountThreshold,
+                                              maximumValueCountThreshold)
         correlationEngine.addProgressListener(CorrelationProgressListenerConsole(sys.stderr))
         
         for correlation in correlationEngine.correlate(dataSource):
