@@ -4,7 +4,7 @@
 #
 # @author: Younes JAAIDI
 #
-# $Id: $
+# $Id$
 #
 
 from sqlalchemy.ext.declarative import declarative_base
