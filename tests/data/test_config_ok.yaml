@@ -8,4 +8,6 @@ variables:
     - bbb
     - ccc
 
-minimumOccurrenceCountThreshold: 10
+minimum_occurrence_count_threshold: 10
+
+maximum_value_count_threshold: 20

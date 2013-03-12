@@ -8,7 +8,6 @@
 #
 
 from contracts import contract
-import copy
 import io
 import yaml
 
@@ -24,7 +23,8 @@ class Config:
 
     _KEY_IGNORE_FILTER_LIST = 'ignore'
     _KEY_VARIABLE_NAME_LIST = 'variables'
-    _KEY_MINIMUM_OCCURRENCE_COUNT_THRESHOLD = 'minimumOccurrenceCountThreshold'
+    _KEY_MINIMUM_OCCURRENCE_COUNT_THRESHOLD = 'minimum_occurrence_count_threshold'
+    _KEY_MAXIMUM_VALUE_COUNT_THRESHOLD = 'maximum_value_count_threshold'
 
     @contract
     def __init__(self, configFilePath = None):
@@ -38,7 +38,8 @@ class Config:
                                                                   'requestFileName',
                                                                   'payloadContainer',
                                                                   'ruleId'],
-                                   self._KEY_MINIMUM_OCCURRENCE_COUNT_THRESHOLD: 0}
+                                   self._KEY_MINIMUM_OCCURRENCE_COUNT_THRESHOLD: 0,
+                                   self._KEY_MAXIMUM_VALUE_COUNT_THRESHOLD: None}
 
     def ignoredVariableDict(self):
         """
@@ -54,6 +55,9 @@ class Config:
 
     def minimumOccurrenceCountThreshold(self):
         return self._loadConfigDict()[self._KEY_MINIMUM_OCCURRENCE_COUNT_THRESHOLD]
+
+    def maximumValueCountThreshold(self):
+        return self._loadConfigDict()[self._KEY_MAXIMUM_VALUE_COUNT_THRESHOLD]
 
     def _loadConfigDict(self):
         if self._configDict is not None:
