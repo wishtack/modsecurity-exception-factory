@@ -13,6 +13,7 @@ from modsecurity_exception_factory.modsecurity_audit_data_source.i_modsecurity_a
     IModsecurityAuditDataSource
 from modsecurity_exception_factory.orange_data_table_factory import OrangeDataTableFactory
 from synthetic.decorators import synthesizeMember, synthesizeConstructor
+import Orange.data
 import datetime
 import itertools
 import orange
@@ -24,17 +25,21 @@ new_contract('IModsecurityAuditDataSource', IModsecurityAuditDataSource)
 @synthesizeMember('attributeDict')
 @synthesizeConstructor()
 class Result:
-    def __init__(self):
-        self._attributeDict = {}
-        self._childrenList = []
+    def __init__(self, attributeDict, childrenResultList):
+        self._attributeDict = attributeDict
+        self._childrenResultList = childrenResultList
     
     def addChild(self, result):
-        self._childrenList.append(result)
+        self._childrenResultList.append(result)
     
     def __str__(self):
-        print(self._attributeDict)
-        for child in self._childrenList:
-            print("\t%s", child)
+        return self.toString()
+
+    def toString(self, prefix = ""):
+        resultString = "%s%s\n" % (prefix, self._attributeDict)
+        for child in self._childrenResultList:
+            resultString += child.toString(prefix + "\t")
+        return resultString
 
 class ModsecurityAuditCorrelationEngine:
     
@@ -90,10 +95,19 @@ class ModsecurityAuditCorrelationEngine:
         orngAssoc.sort(ruleIterable, ['support', 'n_left'])
         
         for rule in ruleIterable:
-            subsetVariableNameList = filter(lambda v: v not in self._ruleToAttributeNameList(data.domain, rule), variableNameList)
             childrenResultList = []
+            ruleAttributeNameList = self._ruleToAttributeNameList(data.domain, rule)
+            matchingData = self._matchingData(data, rule)
+            
+            if len(matchingData) == 0:
+                continue
+
+            if not set(ruleAttributeNameList).issubset(set(variableNameList)):
+                continue
+            
+            subsetVariableNameList = filter(lambda v: v not in ruleAttributeNameList, variableNameList)
             if len(subsetVariableNameList) > 0:
-                childrenResultList = self._induce(self._matchingData(data, rule), subsetVariableNameList)
+                childrenResultList = self._induce(matchingData, subsetVariableNameList)
 
             result = Result(attributeDict = self._ruleToAttributeDict(data.domain, rule),
                             childrenResultList = childrenResultList)
