@@ -23,6 +23,7 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(['aaa', 'bbb', 'ccc'],
                          config.variableNameList())
         self.assertEqual(10, config.minimumOccurrenceCountThreshold())
+        self.assertEqual(20, config.maximumValueCountThreshold())
 
     def testEmpty(self):
         config = Config(self._TEST_CONFIG_EMPTY)
@@ -30,6 +31,7 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(['hostName', 'requestFileName', 'payloadContainer', 'ruleId'],
                          config.variableNameList())
         self.assertEqual(0, config.minimumOccurrenceCountThreshold())
+        self.assertEqual(None, config.maximumValueCountThreshold())
 
     def testDefault(self):
         config = Config()
@@ -37,3 +39,4 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(['hostName', 'requestFileName', 'payloadContainer', 'ruleId'],
                          config.variableNameList())
         self.assertEqual(0, config.minimumOccurrenceCountThreshold())
+        self.assertEqual(None, config.maximumValueCountThreshold())

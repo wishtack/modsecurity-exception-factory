@@ -8,9 +8,12 @@
 #
 
 from .correlation import Correlation
+from .correlation_merge_delegate import CorrelationMergeDelegate
 from .i_correlation_progress_listener import ICorrelationProgressListener
 from .i_item_data_source import IItemDataSource
 from contracts import contract, new_contract
+from synthetic import synthesizeMember
+from synthetic.decorators import synthesizeConstructor
 import copy
 
 new_contract('ICorrelationProgressListener', ICorrelationProgressListener)
@@ -20,23 +23,20 @@ class ImpossibleError(Exception):
     def __init__(self):
         super(self.__class__, self).__init__(u"Call the developers!")
 
+@synthesizeMember('variableNameList', contract = 'list(str)', readOnly = True)
+@synthesizeMember('ignoredVariableDict', default = {}, contract = 'dict(str:list(unicode))', readOnly = True)
+@synthesizeMember('minimumOccurrenceCountThreshold', default = 0, contract = int, readOnly = True)
+@synthesizeMember('maximumValueCountThreshold', contract = 'int|None', readOnly = True)
+@synthesizeConstructor()
 class CorrelationEngine:
     
     _EMPTY_ATTRIBUTE_VALUE = '~'
 
-    @contract
-    def __init__(self, variableNameList, ignoredVariableDict = {}, minimumOccurrenceCountThreshold = 0):
-        """
-    :type variableNameList: list(str)
-    :type ignoredVariableDict: dict(str:list(unicode))
-    :type minimumOccurrenceCountThreshold: int
-"""
-        self._variableNameList = variableNameList
-        self._ignoredVariableDict = ignoredVariableDict
-        self._minimumOccurrenceCountThreshold = minimumOccurrenceCountThreshold
+    def __init__(self):
         self._progressListenerList = []
         self._count = 0
         self._totalCount = 0
+        self._mergeDelegate = CorrelationMergeDelegate(maximumValueCountThreshold = self._maximumValueCountThreshold)
     
     @contract
     def correlate(self, dataSource):
@@ -52,7 +52,7 @@ Yields :class:Correlation objects.
         # Initialize counters.
         self._count = 0
         self._totalCount = len(itemDictIterable)
-        for correlation in self._correlationIterable(itemDictIterable, self._variableNameList):
+        for correlation in self._correlateAndMerge(itemDictIterable, self._variableNameList):
             yield correlation
 
     @contract
@@ -69,7 +69,12 @@ Yields :class:Correlation objects.
                 itemDictIterable = itemDictIterable.filterByVariable(variableName, variableValue, negate = True)
         return itemDictIterable
 
-    def _correlationIterable(self, itemDictIterable, variableNameList):
+    
+    def _correlateAndMerge(self, itemDictIterable, variableNameList):
+        correlationIterable = self._correlate(itemDictIterable, variableNameList)
+        return self._mergeDelegate.mergeCorrelationIterable(correlationIterable)
+    
+    def _correlate(self, itemDictIterable, variableNameList):
         # Merge all values when there's only one variable remaining.
         if len(variableNameList) == 1:
             # Variable name.
@@ -80,6 +85,7 @@ Yields :class:Correlation objects.
             # Increment progress and inform listeners.
             self._incrementProgress(itemCount)
             # Correlation leaf is ready.
+            
             yield Correlation(variableName,
                               variableValueSet = variableValueSet,
                               itemCount = itemCount)
@@ -106,11 +112,12 @@ Yields :class:Correlation objects.
             remainingVariableNameList.remove(variableName)
 
             # ... otherwise, we must continue...
+            subCorrelationIterable = self._correlateAndMerge(matchingItemDictIterable,
+                                                             remainingVariableNameList)
             correlation = Correlation(variableName,
                                       variableValueSet = {variableValue},
-                                      subCorrelationIterable = self._correlationIterable(matchingItemDictIterable,
-                                                                                         remainingVariableNameList),
-                                      itemCount = matchingItemCount)
+                                      itemCount = matchingItemCount,
+                                      subCorrelationList = list(subCorrelationIterable))
             yield correlation
             mostFrequentVariableNameAndValue = itemDictIterable.mostFrequentVariableAndValue(variableNameList)
 
