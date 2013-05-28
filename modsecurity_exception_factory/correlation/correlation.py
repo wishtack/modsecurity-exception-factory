@@ -28,7 +28,27 @@ corresponding to the variable name and a list of children nodes called subcorrel
         # Converting iterables to list. 
         if not isinstance(self._sub_correlation_list, list):
             self._sub_correlation_list = list(self._sub_correlation_list)
+
+    @classmethod
+    def load_from_dict(cls, correlation_dict):
+        kwargs = {}
         
+        # Keeping those items as is.
+        for key in ['variable_name', 'item_count']:
+            kwargs[key] = correlation_dict[key]
+        
+        # Converting value list to set.
+        kwargs['variable_value_set'] = set(correlation_dict['variable_value_list'])
+
+        # Converting sub correlation list dicts to `Correlation` objects list.
+        sub_correlation_list = []
+        for sub_correlation_dict in correlation_dict.get('sub_correlation_list', []):
+            sub_correlation_list.append(Correlation.load_from_dict(sub_correlation_dict))
+
+        kwargs['sub_correlation_list'] = sub_correlation_list
+
+        return Correlation(**kwargs)
+
     def mergeable_variable_dict(self):
         """
         :IMPORTANT: internal use. 
@@ -87,6 +107,16 @@ and
         else:
             return copy.copy(self._sub_correlation_list)
 
+    def to_dict(self):
+        correlation_dict = {'variable_name': self._variable_name,
+                            'variable_value_list': sorted(list(self._variable_value_set)),
+                            'item_count': self._item_count}
+        
+        if self._sub_correlation_list:
+            correlation_dict['sub_correlation_list'] = [c.to_dict() for c in self._sub_correlation_list]
+        
+        return correlation_dict
+
     def __repr__(self):
         return self._to_string()
 
@@ -101,7 +131,7 @@ and
                               variable_value_list = variable_value_list_as_string)
         for sub_correlation in self._sub_correlation_list:
             repr_string += sub_correlation._to_string(indent + u"        ")
-        return repr_string        
+        return repr_string
 
     def _check_sub_correlation_iterable_or_item_count(self, sub_correlation_iterable, item_count):
         """
