@@ -72,117 +72,117 @@ class TestCorrelationMergeDelegate(unittest.TestCase):
         # a1 -> b1 -> c1
         c1 = Correlation('c',
                          {u"c1"},
-                         itemCount = 50, # This can be greater than the sum as some sub correlations might have been dropped by filters.
-                         subCorrelationList = merger.mergeCorrelationIterable([Correlation('d', {u"d1"}, itemCount = 10),
-                                                                               Correlation('d', {u"d2"}, itemCount = 10),
-                                                                               Correlation('d', {u"d3"}, itemCount = 10),
-                                                                               Correlation('d', {u"d4"}, itemCount = 10)]))
+                         item_count = 50, # This can be greater than the sum as some sub correlations might have been dropped by filters.
+                         sub_correlation_list = merger.mergeCorrelationIterable([Correlation('d', {u"d1"}, item_count = 10),
+                                                                               Correlation('d', {u"d2"}, item_count = 10),
+                                                                               Correlation('d', {u"d3"}, item_count = 10),
+                                                                               Correlation('d', {u"d4"}, item_count = 10)]))
 
         # a1 -> b1 -> c2
         c2 = Correlation('c',
                          {u"c2"},
-                         itemCount = 50,
-                         subCorrelationList = merger.mergeCorrelationIterable([Correlation('d', {u"d1"}, itemCount = 10),
-                                                                               Correlation('d', {u"d2"}, itemCount = 10),
-                                                                               Correlation('d', {u"d3"}, itemCount = 10)]))
+                         item_count = 50,
+                         sub_correlation_list = merger.mergeCorrelationIterable([Correlation('d', {u"d1"}, item_count = 10),
+                                                                               Correlation('d', {u"d2"}, item_count = 10),
+                                                                               Correlation('d', {u"d3"}, item_count = 10)]))
 
         # a1 -> b1 -> c4
         c4 = Correlation('c',
                          {u"c4"},
-                         itemCount = 50,
-                         subCorrelationList = merger.mergeCorrelationIterable([Correlation('d', {u"d1"}, itemCount = 10),
-                                                                               Correlation('d', {u"d2"}, itemCount = 10),  
-                                                                               Correlation('d', {u"d3"}, itemCount = 10)]))
+                         item_count = 50,
+                         sub_correlation_list = merger.mergeCorrelationIterable([Correlation('d', {u"d1"}, item_count = 10),
+                                                                               Correlation('d', {u"d2"}, item_count = 10),  
+                                                                               Correlation('d', {u"d3"}, item_count = 10)]))
 
         # a1 -> b1 -> c3
         c3 = Correlation('c',
                          {u"c3"},
-                         itemCount = 50,
-                         subCorrelationList = merger.mergeCorrelationIterable([Correlation('d', {u"d1"}, itemCount = 10),
-                                                                               Correlation('d', {u"d2"}, itemCount = 10),
-                                                                               Correlation('d', {u"d3"}, itemCount = 10)]))
+                         item_count = 50,
+                         sub_correlation_list = merger.mergeCorrelationIterable([Correlation('d', {u"d1"}, item_count = 10),
+                                                                               Correlation('d', {u"d2"}, item_count = 10),
+                                                                               Correlation('d', {u"d3"}, item_count = 10)]))
 
         # a1 -> b1   
         b1 = Correlation('b',
                          {u"b1"},
-                         itemCount = 50,
-                         subCorrelationList = merger.mergeCorrelationIterable([c1, c2, c4, c3]))
+                         item_count = 50,
+                         sub_correlation_list = merger.mergeCorrelationIterable([c1, c2, c4, c3]))
 
         # a1 -> b2 -> c1
         c1 = Correlation('c',
                          {u"c1"},
-                         itemCount = 50,
-                         subCorrelationList = merger.mergeCorrelationIterable([Correlation('d', {u"d1"}, itemCount = 10),
-                                                                               Correlation('d', {u"d2"}, itemCount = 10),
-                                                                               Correlation('d', {u"d3"}, itemCount = 10)]))
+                         item_count = 50,
+                         sub_correlation_list = merger.mergeCorrelationIterable([Correlation('d', {u"d1"}, item_count = 10),
+                                                                               Correlation('d', {u"d2"}, item_count = 10),
+                                                                               Correlation('d', {u"d3"}, item_count = 10)]))
 
         # a1 -> b2 -> c2
         c2 = Correlation('c',
                          {u"c2"},
-                         itemCount = 50,
-                         subCorrelationList = merger.mergeCorrelationIterable([Correlation('d', {u"d1"}, itemCount = 10),
-                                                                               Correlation('d', {u"d2"}, itemCount = 10),
-                                                                               Correlation('d', {u"d3"}, itemCount = 10)]))
+                         item_count = 50,
+                         sub_correlation_list = merger.mergeCorrelationIterable([Correlation('d', {u"d1"}, item_count = 10),
+                                                                               Correlation('d', {u"d2"}, item_count = 10),
+                                                                               Correlation('d', {u"d3"}, item_count = 10)]))
 
         # a1 -> b2
         b2 = Correlation('b',
                          {u"b2"},
-                         itemCount = 50,
-                         subCorrelationList = merger.mergeCorrelationIterable([c1, c2]))
+                         item_count = 50,
+                         sub_correlation_list = merger.mergeCorrelationIterable([c1, c2]))
 
         # a1 -> b3 -> d1
         d1 = Correlation('d',
                          {u"d1"},
-                         itemCount = 50,
-                         subCorrelationList = merger.mergeCorrelationIterable([Correlation('c', {u"c1"}, itemCount = 10),
-                                                                               Correlation('c', {u"c2"}, itemCount = 10)]))
+                         item_count = 50,
+                         sub_correlation_list = merger.mergeCorrelationIterable([Correlation('c', {u"c1"}, item_count = 10),
+                                                                               Correlation('c', {u"c2"}, item_count = 10)]))
 
         # a1 -> b3 -> d2
         d2 = Correlation('d',
                          {u"d2"},
-                         itemCount = 50,
-                         subCorrelationList = merger.mergeCorrelationIterable([Correlation('c', {u"c1"}, itemCount = 10),
-                                                                               Correlation('c', {u"c2"}, itemCount = 10)]))
+                         item_count = 50,
+                         sub_correlation_list = merger.mergeCorrelationIterable([Correlation('c', {u"c1"}, item_count = 10),
+                                                                               Correlation('c', {u"c2"}, item_count = 10)]))
 
         # a1 -> b3 -> d3
         d3 = Correlation('d',
                          {u"d3"},
-                         itemCount = 50,
-                         subCorrelationList = merger.mergeCorrelationIterable([Correlation('c', {u"c1"}, itemCount = 10),
-                                                                               Correlation('c', {u"c2"}, itemCount = 10)]))
+                         item_count = 50,
+                         sub_correlation_list = merger.mergeCorrelationIterable([Correlation('c', {u"c1"}, item_count = 10),
+                                                                               Correlation('c', {u"c2"}, item_count = 10)]))
         
         # a1 -> b3
         b3 = Correlation('b',
                          {u"b3"},
-                         itemCount = 50,
-                         subCorrelationList = merger.mergeCorrelationIterable([d1, d2, d3]))
+                         item_count = 50,
+                         sub_correlation_list = merger.mergeCorrelationIterable([d1, d2, d3]))
 
         # a1 -> b4 -> c5 -> d5
-        d5 = Correlation('d', {u"d5"}, itemCount = 10)
+        d5 = Correlation('d', {u"d5"}, item_count = 10)
 
         # a1 -> b4 -> c5
-        c5 = Correlation('c', {u"c5"}, itemCount = 10, subCorrelationList = merger.mergeCorrelationIterable([d5]))
+        c5 = Correlation('c', {u"c5"}, item_count = 10, sub_correlation_list = merger.mergeCorrelationIterable([d5]))
 
         # a1 -> b4 -> c6 -> d6
-        d6 = Correlation('d', {u"d6"}, itemCount = 10)
+        d6 = Correlation('d', {u"d6"}, item_count = 10)
 
         # a1 -> b4 -> c6
-        c6 = Correlation('c', {u"c6"}, itemCount = 10, subCorrelationList = merger.mergeCorrelationIterable([d6]))
+        c6 = Correlation('c', {u"c6"}, item_count = 10, sub_correlation_list = merger.mergeCorrelationIterable([d6]))
 
         # a1 -> b4
-        b4 = Correlation('b', {u"b4"}, itemCount = 30, subCorrelationList = merger.mergeCorrelationIterable([c5, c6]))
+        b4 = Correlation('b', {u"b4"}, item_count = 30, sub_correlation_list = merger.mergeCorrelationIterable([c5, c6]))
 
         # a1 -> d7 -> c7 -> b4
-        b4_2 = Correlation('b', {u"b4"}, itemCount = 10)
+        b4_2 = Correlation('b', {u"b4"}, item_count = 10)
         
         # a1 -> d7 -> c7
-        c7 = Correlation('c', {u"c7"}, itemCount = 10, subCorrelationList = merger.mergeCorrelationIterable([b4_2]))
+        c7 = Correlation('c', {u"c7"}, item_count = 10, sub_correlation_list = merger.mergeCorrelationIterable([b4_2]))
         
         # a1 -> d7
-        d7 = Correlation('d', {u"d7"}, itemCount = 10, subCorrelationList = merger.mergeCorrelationIterable([c7]))
+        d7 = Correlation('d', {u"d7"}, item_count = 10, sub_correlation_list = merger.mergeCorrelationIterable([c7]))
         
         # a1
-        a1 = Correlation('a', {u"a1"}, itemCount = 400, subCorrelationList = merger.mergeCorrelationIterable([b1, b2, b3, b4, d7]))
+        a1 = Correlation('a', {u"a1"}, item_count = 400, sub_correlation_list = merger.mergeCorrelationIterable([b1, b2, b3, b4, d7]))
         
         self.assertEqual("""\
 a (count=400) = a1

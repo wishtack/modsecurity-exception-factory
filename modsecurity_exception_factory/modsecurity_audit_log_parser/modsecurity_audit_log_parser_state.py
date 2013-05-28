@@ -14,6 +14,7 @@ from modsecurity_exception_factory.modsecurity_audit_log_parser.i_modsecurity_au
 from synthetic.decorators import synthesizeMember, synthesizeConstructor
 
 new_contract('IModsecurityAuditLogSectionParser', IModsecurityAuditLogSectionParser)
+new_contract('ModsecurityAuditEntry', ModsecurityAuditEntry)
 
 @synthesizeMember('currentLineString', contract = 'unicode|None')
 @synthesizeMember('currentSectionLineIndex', default = 0, contract = 'int|None')

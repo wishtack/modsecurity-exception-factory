@@ -70,10 +70,10 @@ class CorrelationMergeDelegate(object):
             return [correlation]
 
         # Making a list of variables that can be merged between the last and the new correlation.
-        lastCorrelationTrunkVariableDict = lastCorrelation.mergeableVariableDict()
-        lastCorrelationSubCorrelationList = lastCorrelation.unmergeableSubCorrelationList()
-        newCorrelationTrunkVariableDict = correlation.mergeableVariableDict()
-        newCorrelationSubCorrelationList = correlation.unmergeableSubCorrelationList()
+        lastCorrelationTrunkVariableDict = lastCorrelation.mergeable_variable_dict()
+        lastCorrelationSubCorrelationList = lastCorrelation.unmergeable_sub_correlation_list()
+        newCorrelationTrunkVariableDict = correlation.mergeable_variable_dict()
+        newCorrelationSubCorrelationList = correlation.unmergeable_sub_correlation_list()
         
         # Common variables.
         commonVariableDict = {}
@@ -93,7 +93,7 @@ class CorrelationMergeDelegate(object):
             variableName = distinctVariableNameList[0]
             variableValueSet = lastCorrelationTrunkVariableDict[variableName]\
                                .union(newCorrelationTrunkVariableDict[variableName])
-            itemCount = lastCorrelation.itemCount() + correlation.itemCount()
+            itemCount = lastCorrelation.item_count() + correlation.item_count()
             subCorrelationList = self._variableDictToCorrelationTreeList({variableName: variableValueSet},
                                                                          itemCount = itemCount)
             
@@ -106,17 +106,17 @@ class CorrelationMergeDelegate(object):
             
             subCorrelationList = []
             subCorrelationList += self._variableDictToCorrelationTreeList(lastCorrelationTrunkVariableDict,
-                                                                          itemCount = lastCorrelation.itemCount(),
+                                                                          itemCount = lastCorrelation.item_count(),
                                                                           subCorrelationList = lastCorrelationSubCorrelationList)
             subCorrelationList += self._variableDictToCorrelationTreeList(newCorrelationTrunkVariableDict,
-                                                                          itemCount = correlation.itemCount(),
+                                                                          itemCount = correlation.item_count(),
                                                                           subCorrelationList = newCorrelationSubCorrelationList)
 
         # ...and we try to make one correlation with common variables.
         # If there common variables, the returned list will contain only one correlation.
         # Otherwise it will contain two correlations.
         mergedCorrelationList = self._variableDictToCorrelationTreeList(commonVariableDict,
-                                                                        sum(imap(lambda c: c.itemCount(), subCorrelationList)),
+                                                                        sum(imap(lambda c: c.item_count(), subCorrelationList)),
                                                                         subCorrelationList)
         return mergedCorrelationList
 
@@ -137,9 +137,9 @@ class CorrelationMergeDelegate(object):
         for variableName, variableValueSet in reversed(variableDict.items()):
             # We set correlate to 'False' otherwise we'll fall in a infinite loop.
             correlation = Correlation(variableName,
-                                      variableValueSet = variableValueSet,
-                                      itemCount = itemCount,
-                                      subCorrelationList = subCorrelationList)
+                                      variable_value_set = variableValueSet,
+                                      item_count = itemCount,
+                                      sub_correlation_list = subCorrelationList)
             subCorrelationList = [correlation]
 
         if correlation is not None:
@@ -154,8 +154,8 @@ class CorrelationMergeDelegate(object):
         :type maximumValueCountThreshold: int
 """
         for correlation in correlationIterable:
-            if len(correlation.variableValueSet()) > maximumValueCountThreshold:
-                for subCorrelation in correlation.subCorrelationList():
+            if len(correlation.variable_value_set()) > maximumValueCountThreshold:
+                for subCorrelation in correlation.sub_correlation_list():
                     yield subCorrelation
             else:
                 yield correlation

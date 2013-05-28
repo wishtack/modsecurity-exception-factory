@@ -1,9 +1,9 @@
-#Tue Feb 26 17:08:24 CET 2013
 eclipse.preferences.version=1
 encoding//modsecurity_exception_factory/commands/command_modsecurity_exception_factory.py=utf-8
 encoding//modsecurity_exception_factory/correlation/__init__.py=utf-8
 encoding//modsecurity_exception_factory/correlation/correlation.py=utf-8
 encoding//modsecurity_exception_factory/correlation/correlation_engine.py=utf-8
+encoding//modsecurity_exception_factory/correlation/correlation_merge_delegate.py=utf-8
 encoding//modsecurity_exception_factory/correlation/correlation_progress_listener_console.py=utf-8
 encoding//modsecurity_exception_factory/correlation/i_correlation_progress_listener.py=utf-8
 encoding//modsecurity_exception_factory/correlation/i_item_data_source.py=utf-8
@@ -33,5 +33,6 @@ encoding//tests/test_command_modsecurity_exception_factory.py=utf-8
 encoding//tests/test_config.py=utf-8
 encoding//tests/test_correlation.py=utf-8
 encoding//tests/test_correlation_engine.py=utf-8
+encoding//tests/test_correlation_merge_delegate.py=utf-8
 encoding//tests/test_modsecurity_audit_data_source_sql.py=utf-8
 encoding//tests/test_modsecurity_audit_log_parser.py=utf-8

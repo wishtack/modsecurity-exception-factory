@@ -87,8 +87,8 @@ Yields :class:Correlation objects.
             # Correlation leaf is ready.
             
             yield Correlation(variableName,
-                              variableValueSet = variableValueSet,
-                              itemCount = itemCount)
+                              variable_value_set = variableValueSet,
+                              item_count = itemCount)
             return
 
         mostFrequentVariableNameAndValue = itemDictIterable.mostFrequentVariableAndValue(variableNameList)
@@ -115,9 +115,9 @@ Yields :class:Correlation objects.
             subCorrelationIterable = self._correlateAndMerge(matchingItemDictIterable,
                                                              remainingVariableNameList)
             correlation = Correlation(variableName,
-                                      variableValueSet = {variableValue},
-                                      itemCount = matchingItemCount,
-                                      subCorrelationList = list(subCorrelationIterable))
+                                      variable_value_set = {variableValue},
+                                      item_count = matchingItemCount,
+                                      sub_correlation_list = list(subCorrelationIterable))
             yield correlation
             mostFrequentVariableNameAndValue = itemDictIterable.mostFrequentVariableAndValue(variableNameList)
 
