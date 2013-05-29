@@ -108,23 +108,6 @@ and
         else:
             return copy.copy(self._sub_correlation_list)
 
-    @classmethod
-    def yaml_representer(cls, dumper, correlation):
-        
-        data = [('variable_name', correlation.variable_name()),
-                ('item_count', correlation.item_count()),
-                ('variable_value_list', correlation._sorted_variable_value_list())]
-
-        sub_correlation_list = correlation.sub_correlation_list()
-        if sub_correlation_list:
-            data.append(('sub_correlation_list', sub_correlation_list))
-
-        return dumper.represent_mapping(u'tag:yaml.org,2002:map', data)
-
-    def to_yaml(self):
-        yaml.add_representer(Correlation, Correlation.yaml_representer)
-        return yaml.dump(self, default_flow_style = False)
-
     def __repr__(self):
         return self._to_string()
 
