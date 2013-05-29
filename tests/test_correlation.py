@@ -7,9 +7,11 @@
 # $Id$
 #
 
+from modsecurity_exception_factory.correlation import correlation
 from modsecurity_exception_factory.correlation.correlation import Correlation
-
 import unittest
+import yaml
+
 
 class TestCorrelation(unittest.TestCase):
 
@@ -63,9 +65,65 @@ class TestCorrelation(unittest.TestCase):
                                             ]}
                                        ]}
                                   ]}
+        
+        self._yaml_correlation = u"""\
+variable_name: a
+item_count: 400
+variable_value_list:
+- a1
+sub_correlation_list:
+- variable_name: b
+  item_count: 50
+  variable_value_list:
+  - b1
+  sub_correlation_list:
+  - variable_name: c
+    item_count: 50
+    variable_value_list:
+    - c1
+    sub_correlation_list:
+    - variable_name: d
+      item_count: 50
+      variable_value_list:
+      - d1
+      - d2
+      - d3
+      - d4
+  - variable_name: d
+    item_count: 150
+    variable_value_list:
+    - d1
+    - d2
+    - d3
+    sub_correlation_list:
+    - variable_name: c
+      item_count: 150
+      variable_value_list:
+      - c2
+      - c3
+      - c4
+- variable_name: c
+  item_count: 100
+  variable_value_list:
+  - c1
+  - c2
+  sub_correlation_list:
+  - variable_name: d
+    item_count: 100
+    variable_value_list:
+    - d1
+    - d2
+    - d3
+    sub_correlation_list:
+    - variable_name: b
+      item_count: 100
+      variable_value_list:
+      - b2
+      - b3
+"""
 
-    def test_correlation_parse_dict(self):
-        correlation = Correlation.load_from_dict(self._correlation_dict)
+    def test_correlation_load_yaml(self):
+        correlation = Correlation.load_from_dict(yaml.load(self._yaml_correlation))
 
         self.assertEqual('a', correlation.variable_name())
         self.assertEqual({u"a1"}, correlation.variable_value_set())
@@ -78,9 +136,6 @@ class TestCorrelation(unittest.TestCase):
         self.assertEqual(100, sub_correlation.item_count())
         self.assertEqual(1, len(sub_correlation.sub_correlation_list()))
 
-    def test_correlation_to_dict(self):
-        # Loading...
+    def test_correlation_to_yaml(self):
         correlation = Correlation.load_from_dict(self._correlation_dict)
-        
-        # ...then dumping...
-        self.assertEqual(self._correlation_dict, correlation.to_dict())
+        self.assertEqual(self._yaml_correlation, correlation.to_yaml())
