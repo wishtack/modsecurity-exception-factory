@@ -30,7 +30,7 @@ class CorrelationSerializerYaml(object):
     def _correlation_yaml_representer(cls, dumper, correlation):
         data = [('variable_name', correlation.variable_name()),
                 ('item_count', correlation.item_count()),
-                ('variable_value_list', sorted(list(correlation.variable_value_set())))]
+                ('variable_value_list', sorted(value.encode() for value in correlation.variable_value_set()))]
 
         sub_correlation_list = correlation.sub_correlation_list()
         if sub_correlation_list:

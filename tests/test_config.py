@@ -18,8 +18,8 @@ class TestConfig(unittest.TestCase):
 
     def testOK(self):
         config = Config(self._TEST_CONFIG_OK)
-        self.assertEqual({'ruleId': [u"111111", u"222222", u"333333"],
-                          'hostName': [u"1.1.1.1"]}, config.ignoredVariableDict())
+        self.assertEqual({'rule_id': [u"111111", u"222222", u"333333"],
+                          'host_name': [u"1.1.1.1"]}, config.ignoredVariableDict())
         self.assertEqual(['aaa', 'bbb', 'ccc'],
                          config.variableNameList())
         self.assertEqual(10, config.minimumOccurrenceCountThreshold())
@@ -28,7 +28,7 @@ class TestConfig(unittest.TestCase):
     def testEmpty(self):
         config = Config(self._TEST_CONFIG_EMPTY)
         self.assertEqual({}, config.ignoredVariableDict())
-        self.assertEqual(['hostName', 'requestFileName', 'payloadContainer', 'ruleId'],
+        self.assertEqual(['host_name', 'request_file_name', 'payload_container', 'rule_id'],
                          config.variableNameList())
         self.assertEqual(0, config.minimumOccurrenceCountThreshold())
         self.assertEqual(None, config.maximumValueCountThreshold())
@@ -36,7 +36,7 @@ class TestConfig(unittest.TestCase):
     def testDefault(self):
         config = Config()
         self.assertEqual({}, config.ignoredVariableDict())
-        self.assertEqual(['hostName', 'requestFileName', 'payloadContainer', 'ruleId'],
+        self.assertEqual(['host_name', 'request_file_name', 'payload_container', 'rule_id'],
                          config.variableNameList())
         self.assertEqual(0, config.minimumOccurrenceCountThreshold())
         self.assertEqual(None, config.maximumValueCountThreshold())

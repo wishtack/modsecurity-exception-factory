@@ -1,7 +1,7 @@
 
 ignore:
-    ruleId: [111111, 222222, 333333]
-    hostName: [1.1.1.1]
+    rule_id: [111111, 222222, 333333]
+    host_name: [1.1.1.1]
 
 minimum_occurrence_count_threshold: 1
 

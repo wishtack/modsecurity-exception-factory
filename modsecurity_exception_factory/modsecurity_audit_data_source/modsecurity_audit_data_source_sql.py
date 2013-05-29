@@ -39,14 +39,14 @@ class ModsecurityAuditDataSourceSQL(IModsecurityAuditDataSource):
         sqlModsecurityAuditEntryMessageBuffer = []
         
         for modsecurityAuditEntry in modsecurityAuditEntryIterable:
-            hostName = modsecurityAuditEntry.hostName()
-            requestFileName = modsecurityAuditEntry.requestFileName()
-            for message in modsecurityAuditEntry.messageList():
+            hostName = modsecurityAuditEntry.host_name()
+            requestFileName = modsecurityAuditEntry.request_file_name()
+            for message in modsecurityAuditEntry.message_list():
                 sqlMessage = SQLModsecurityAuditEntryMessage()
-                sqlMessage.hostName = hostName
-                sqlMessage.requestFileName = requestFileName
-                sqlMessage.payloadContainer = message.payloadContainer()
-                sqlMessage.ruleId = message.ruleId()
+                sqlMessage.host_name = hostName
+                sqlMessage.request_file_name = requestFileName
+                sqlMessage.payload_container = message.payload_container()
+                sqlMessage.rule_id = message.rule_id()
                 
                 # Insert message.
                 self._insertModsecurityAuditEntryMessage(sqlModsecurityAuditEntryMessageBuffer, sqlMessage)

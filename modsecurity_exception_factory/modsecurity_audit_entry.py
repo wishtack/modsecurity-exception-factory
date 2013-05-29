@@ -9,22 +9,22 @@
 
 from .modsecurity_audit_entry_message import ModsecurityAuditEntryMessage
 from contracts import new_contract, contract
-from synthetic import synthesizeMember, synthesizeConstructor
+from synthetic import synthesize_member, synthesize_constructor
 
 new_contract('ModsecurityAuditEntryMessage', ModsecurityAuditEntryMessage)
 
-@synthesizeMember('hostName', contract = 'unicode|None')
-@synthesizeMember('requestFileName', contract = 'unicode|None')
-@synthesizeMember('messageList', contract = 'list(ModsecurityAuditEntryMessage)|None')
-@synthesizeMember('inboundAnomalyScore', default = 0, contract = 'int|None')
-@synthesizeConstructor()
+@synthesize_member('host_name', contract = 'unicode|None')
+@synthesize_member('request_file_name', contract = 'unicode|None')
+@synthesize_member('message_list', contract = 'list(ModsecurityAuditEntryMessage)|None')
+@synthesize_member('inbound_anomaly_score', default = 0, contract = 'int|None')
+@synthesize_constructor()
 class ModsecurityAuditEntry:
     def __init__(self):
-        self._messageList = []
+        self._message_list = []
     
     @contract
     def appendMessage(self, message):
         """
     :type message: ModsecurityAuditEntryMessage
 """
-        self._messageList.append(message)
+        self._message_list.append(message)

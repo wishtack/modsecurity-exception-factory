@@ -7,8 +7,6 @@
 # $Id$
 #
 
-from modsecurity_exception_factory.correlation import correlation
-from modsecurity_exception_factory.correlation.correlation import Correlation
 from modsecurity_exception_factory.correlation.correlation_serializer_yaml import \
     CorrelationSerializerYaml
 from StringIO import StringIO
@@ -17,7 +15,7 @@ import unittest
 class TestCorrelation(unittest.TestCase):
 
     def setUp(self):
-        # a (count=400) = a1
+        # a (count=400) = 0123456
         #         b (count=50) = b1
         #                 c (count=50) = c1
         #                         d (count=50) = d1, d2, d3, d4
@@ -28,55 +26,11 @@ class TestCorrelation(unittest.TestCase):
         #                         b (count=100) = b2, b3
         # b (count=300) = b1, b2
         
-        self._correlation_list = [{'variable_name': 'a',
-                                   'variable_value_list': [u"a1"],
-                                   'item_count': 400,
-                                   'sub_correlation_list': [
-                                       {'variable_name': 'b',
-                                        'variable_value_list': [u"b1"],
-                                        'item_count': 50,
-                                        'sub_correlation_list': [
-                                            {'variable_name': 'c',
-                                             'variable_value_list': [u"c1"],
-                                             'item_count': 50,
-                                             'sub_correlation_list': [
-                                                 {'variable_name': 'd',
-                                                  'variable_value_list': [u"d1", u"d2", u"d3", u"d4"],
-                                                  'item_count': 50}
-                                             ]},
-                                            {'variable_name': 'd',
-                                             'variable_value_list': [u"d1", u"d2", u"d3"],
-                                             'item_count': 150,
-                                             'sub_correlation_list': [
-                                                 {'variable_name': 'c',
-                                                  'variable_value_list': [u"c2", u"c3", u"c4"],
-                                                  'item_count': 150}
-                                             ]}
-                                        ]},
-                                       {'variable_name': 'c',
-                                        'variable_value_list': [u"c1", u"c2"],
-                                        'item_count': 100,
-                                        'sub_correlation_list': [
-                                            {'variable_name': 'd',
-                                             'variable_value_list': [u"d1", u"d2", u"d3"],
-                                             'item_count': 100,
-                                             'sub_correlation_list': [
-                                                 {'variable_name': 'b',
-                                                  'variable_value_list': [u"b2", u"b3"],
-                                                  'item_count': 100}
-                                             ]}
-                                        ]}
-                                   ]},
-                                  {'variable_name': 'b',
-                                   'variable_value_list': [u'b1', u'b2'],
-                                   'item_count': 300}
-                                  ]
-        
         self._correlation_yaml_data = u"""\
 variable_name: a
 item_count: 400
 variable_value_list:
-- a1
+- '0123456'
 sub_correlation_list:
 - variable_name: b
   item_count: 50
@@ -143,7 +97,7 @@ variable_value_list:
         correlation = correlation_list[0]
         
         self.assertEqual('a', correlation.variable_name())
-        self.assertEqual({u"a1"}, correlation.variable_value_set())
+        self.assertEqual({u"0123456"}, correlation.variable_value_set())
         self.assertEqual(400, correlation.item_count())
         self.assertEqual(2, len(correlation.sub_correlation_list()))
         

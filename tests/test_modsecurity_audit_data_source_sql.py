@@ -19,7 +19,7 @@ import unittest
 
 class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
 
-    _VARIABLE_NAME_LIST = ['hostName', 'requestFileName', 'payloadContainer', 'ruleId']
+    _VARIABLE_NAME_LIST = ['host_name', 'request_file_name', 'payload_container', 'rule_id']
 
     def setUp(self):
         cleanUp()
@@ -51,20 +51,20 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
         # Checking some items values.
         itemDictList = list(self._itemDictIterableOriginal)
         message = itemDictList[4]
-        self.assertEqual(None, message['hostName'])
-        self.assertEqual(u"/agilefant/login.jsp", message['requestFileName'])
-        self.assertEqual(u"ARGS:a", message['payloadContainer'])
-        self.assertEqual(u"111111", message['ruleId'])
+        self.assertEqual(None, message['host_name'])
+        self.assertEqual(u"/agilefant/login.jsp", message['request_file_name'])
+        self.assertEqual(u"ARGS:a", message['payload_container'])
+        self.assertEqual(u"111111", message['rule_id'])
         message = itemDictList[68]
-        self.assertEqual(u"1.1.1.1", message['hostName'])
-        self.assertEqual(u"/agilefant/static/js/jquery.jstree.js", message['requestFileName'])
-        self.assertEqual(u"TX:anomaly_score", message['payloadContainer'])
-        self.assertEqual(u"981174", message['ruleId'])
+        self.assertEqual(u"1.1.1.1", message['host_name'])
+        self.assertEqual(u"/agilefant/static/js/jquery.jstree.js", message['request_file_name'])
+        self.assertEqual(u"TX:anomaly_score", message['payload_container'])
+        self.assertEqual(u"981174", message['rule_id'])
         message = itemDictList[100]
-        self.assertEqual(u"1.1.1.1", message['hostName'])
-        self.assertEqual(u"/agilefant/static/js/dynamics/controller/MenuController.js", message['requestFileName'])
-        self.assertEqual(u"REQUEST_HEADERS:Host", message['payloadContainer'])
-        self.assertEqual(u"960017", message['ruleId'])
+        self.assertEqual(u"1.1.1.1", message['host_name'])
+        self.assertEqual(u"/agilefant/static/js/dynamics/controller/MenuController.js", message['request_file_name'])
+        self.assertEqual(u"REQUEST_HEADERS:Host", message['payload_container'])
+        self.assertEqual(u"960017", message['rule_id'])
 
     def testModsecurityEntryMessageIterableDistinct(self):
         itemDictDistinctIterable = self._itemDictIterableOriginal.distinct()
@@ -75,85 +75,85 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
         # Checking some item values.
         itemDictDistinctList = list(itemDictDistinctIterable)
         message = itemDictDistinctList[4]
-        self.assertEqual(None, message['hostName'])
-        self.assertEqual(u"/agilefant/login.jsp", message['requestFileName'])
-        self.assertEqual(u"ARGS:a", message['payloadContainer'])
-        self.assertEqual(u"111111", message['ruleId'])
+        self.assertEqual(None, message['host_name'])
+        self.assertEqual(u"/agilefant/login.jsp", message['request_file_name'])
+        self.assertEqual(u"ARGS:a", message['payload_container'])
+        self.assertEqual(u"111111", message['rule_id'])
         message = itemDictDistinctList[68]
-        self.assertEqual(u"1.1.1.1", message['hostName'])
-        self.assertEqual(u"/agilefant/static/js/jquery.autoSuggest.minified.js", message['requestFileName'])
-        self.assertEqual(u"TX:anomaly_score", message['payloadContainer'])
-        self.assertEqual(u"981174", message['ruleId'])
+        self.assertEqual(u"1.1.1.1", message['host_name'])
+        self.assertEqual(u"/agilefant/static/js/jquery.autoSuggest.minified.js", message['request_file_name'])
+        self.assertEqual(u"TX:anomaly_score", message['payload_container'])
+        self.assertEqual(u"981174", message['rule_id'])
         message = itemDictDistinctList[100]
-        self.assertEqual(u"1.1.1.1", message['hostName'])
-        self.assertEqual(u"/agilefant/static/js/utils/ArrayUtils.js", message['requestFileName'])
-        self.assertEqual(u"REQUEST_HEADERS:Host", message['payloadContainer'])
-        self.assertEqual(u"960017", message['ruleId'])
+        self.assertEqual(u"1.1.1.1", message['host_name'])
+        self.assertEqual(u"/agilefant/static/js/utils/ArrayUtils.js", message['request_file_name'])
+        self.assertEqual(u"REQUEST_HEADERS:Host", message['payload_container'])
+        self.assertEqual(u"960017", message['rule_id'])
 
     def testMostFrequentAttribute(self):
-        self.assertEqual({'hostName': u'1.1.1.1'},
-                         self._itemDictIterableOriginal.mostFrequentVariableAndValue(['hostName', 'requestFileName', 'payloadContainer', 'ruleId']))
+        self.assertEqual({'host_name': u'1.1.1.1'},
+                         self._itemDictIterableOriginal.mostFrequentVariableAndValue(['host_name', 'request_file_name', 'payload_container', 'rule_id']))
 
-        self.assertEqual({'ruleId': u'960017'},
-                         self._itemDictIterableOriginal.mostFrequentVariableAndValue(['ruleId']))
+        self.assertEqual({'rule_id': u'960017'},
+                         self._itemDictIterableOriginal.mostFrequentVariableAndValue(['rule_id']))
 
     def testFilterByVariable(self):
         # Filtering by request file name.
-        itemDictIterable = self._itemDictIterableOriginal.filterByVariable('hostName',
+        itemDictIterable = self._itemDictIterableOriginal.filterByVariable('host_name',
                                                                            u"test.domain.com")
         self.assertEqual(59, len(itemDictIterable))
 
     def testFilterByVariableMultiple(self):
         # Multiple filters.
-        itemDictIterable = self._itemDictIterableOriginal.filterByVariable('hostName',
+        itemDictIterable = self._itemDictIterableOriginal.filterByVariable('host_name',
                                                                            u"test.domain.com")
-        itemDictIterable = itemDictIterable.filterByVariable('ruleId',
+        itemDictIterable = itemDictIterable.filterByVariable('rule_id',
                                                              u"960017")
         self.assertEqual(18, len(itemDictIterable))
         
     def testFilterByVariableReverse(self):
         # Reverse filtering by host name and rule id.
-        itemDictIterable = self._itemDictIterableOriginal.filterByVariable('hostName',
+        itemDictIterable = self._itemDictIterableOriginal.filterByVariable('host_name',
                                                                            u"test.domain.com")
-        itemDictIterable = itemDictIterable.filterByVariable('requestFileName',
+        itemDictIterable = itemDictIterable.filterByVariable('request_file_name',
                                                              u"/agilefant/static/js/jquery.hotkeys.js",
                                                              negate = True)
         self.assertEqual(56, len(itemDictIterable))
 
     def testFilterByVariableReverseMultiple(self):
         # Reverse filtering by host name and rule id.
-        itemDictIterable = self._itemDictIterableOriginal.filterByVariable('hostName',
+        itemDictIterable = self._itemDictIterableOriginal.filterByVariable('host_name',
                                                                            u"test.domain.com")
-        itemDictIterable = itemDictIterable.filterByVariable('requestFileName',
+        itemDictIterable = itemDictIterable.filterByVariable('request_file_name',
                                                              u"/agilefant/static/js/jquery.hotkeys.js",
                                                              negate = True)
-        itemDictIterable = itemDictIterable.filterByVariable('requestFileName',
+        itemDictIterable = itemDictIterable.filterByVariable('request_file_name',
                                                              u"/agilefant/static/js/backlogSelector.js",
                                                              negate = True)
-        itemDictIterable = itemDictIterable.filterByVariable('ruleId',
+        itemDictIterable = itemDictIterable.filterByVariable('rule_id',
                                                              u"981203",
                                                              negate = True)
         self.assertEqual(36, len(itemDictIterable))
 
     def testFilterByVariableNull(self):
-        itemDictIterable = self._itemDictIterableOriginal.filterByVariable('hostName', None)
+        itemDictIterable = self._itemDictIterableOriginal.filterByVariable('host_name', None)
         self.assertEqual(8, len(itemDictIterable))
 
     def testFilterByVariableReverseNull(self):
-        itemDictIterable = self._itemDictIterableOriginal.filterByVariable('hostName', None, negate = True)
+        itemDictIterable = self._itemDictIterableOriginal.filterByVariable('host_name', None, negate = True)
         self.assertEqual(715, len(itemDictIterable))
 
     def testDistinctWithFilter(self):
         # Testing that 'distinct' works with filters.
-        itemDictIterable = self._itemDictIterableOriginal.filterByVariable('hostName',
+        itemDictIterable = self._itemDictIterableOriginal.filterByVariable('host_name',
                                                                            u"test.domain.com")
-        itemDictIterable = itemDictIterable.filterByVariable('requestFileName',
+        itemDictIterable = itemDictIterable.filterByVariable('request_file_name',
                                                              u"/agilefant/static/js/jquery.hotkeys.js",
                                                              negate = True)
-        itemDictIterable = itemDictIterable.filterByVariable('requestFileName',
+        itemDictIterable = itemDictIterable.filterByVariable('request_file_name',
                                                              u"/agilefant/static/js/backlogSelector.js",
                                                              negate = True)
-        itemDictIterable = itemDictIterable.filterByVariable('ruleId',
+        itemDictIterable = itemDictIterable.filterByVariable('rule_id',
                                                              u"981203",
                                                              negate = True)
         itemDictIterableDistinct = itemDictIterable.distinct()
@@ -163,7 +163,7 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
         self.assertEqual(36, len(itemDictIterable))
         
         # Checking that other methods work with filters.
-        self.assertEqual({'hostName': u'test.domain.com'},
+        self.assertEqual({'host_name': u'test.domain.com'},
                          itemDictIterable.mostFrequentVariableAndValue(self._VARIABLE_NAME_LIST))
         # Testing iterator.
         self.assertEqual(36, len(list(itemDictIterable)))
@@ -172,7 +172,7 @@ class TestModsecurityAuditDataSourceSQL(unittest.TestCase):
         itemDictIterable = self._itemDictIterableOriginal
 
         for i in range(1000):
-            itemDictIterable = itemDictIterable.filterByVariable('hostName',
+            itemDictIterable = itemDictIterable.filterByVariable('host_name',
                                                                  unicode(i),
                                                                  negate = True)
         self.assertEqual(723, len(itemDictIterable))

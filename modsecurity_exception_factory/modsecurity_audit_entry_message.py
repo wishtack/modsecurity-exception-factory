@@ -9,8 +9,8 @@
 
 from synthetic import synthesizeMember, synthesizeConstructor
 
-@synthesizeMember('ruleId', contract = unicode, readOnly = True)
-@synthesizeMember('payloadContainer', contract = unicode, readOnly = True)
+@synthesizeMember('rule_id', contract = unicode, readOnly = True)
+@synthesizeMember('payload_container', contract = unicode, readOnly = True)
 @synthesizeConstructor()
 class ModsecurityAuditEntryMessage:
     pass

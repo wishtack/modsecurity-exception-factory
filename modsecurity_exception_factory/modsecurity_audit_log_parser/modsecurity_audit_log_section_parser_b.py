@@ -36,7 +36,7 @@ class ModsecurityAuditLogSectionParserB(IModsecurityAuditLogSectionParser):
         matchResult = self._regexHostHeader.match(strLine)
         if matchResult is not None:
             # @todo warning otherwise.
-            modsecurityAuditEntry.setHostName(matchResult.groupdict()['hostName'])
+            modsecurityAuditEntry.set_host_name(matchResult.groupdict()['hostName'])
 
     def _parseRequestLine(self, modsecurityAuditEntry, strLine):
         partList = strLine.split(u" ")
@@ -50,4 +50,4 @@ class ModsecurityAuditLogSectionParserB(IModsecurityAuditLogSectionParser):
         matchResult = self._regexRequestFileName.match(uri)
         if matchResult is not None:
             # @todo warning otherwise.
-            modsecurityAuditEntry.setRequestFileName(matchResult.groupdict()['requestFileName'])
+            modsecurityAuditEntry.set_request_file_name(matchResult.groupdict()['requestFileName'])
