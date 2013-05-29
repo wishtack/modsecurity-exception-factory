@@ -8,16 +8,15 @@
 #
 
 from collections import OrderedDict
-from contracts import contract
-from itertools import imap
-from synthetic import synthesizeConstructor, synthesizeMember
+from synthetic import synthesize_constructor, synthesize_member
 import copy
+import yaml
 
-@synthesizeMember('variableName', contract = str, readOnly = True)
-@synthesizeMember('variableValueSet', contract = 'Iterable', readOnly = True)
-@synthesizeMember('itemCount', contract = 'int', readOnly = True)
-@synthesizeMember('subCorrelationList', default = [], contract = 'Iterable', readOnly = True)
-@synthesizeConstructor()
+@synthesize_member('variable_name', contract = str, read_only = True)
+@synthesize_member('variable_value_set', contract = 'Iterable', read_only = True)
+@synthesize_member('item_count', contract = 'int', read_only = True)
+@synthesize_member('sub_correlation_list', default = [], contract = 'Iterable', read_only = True)
+@synthesize_constructor()
 class Correlation(object):
     """
 A correlation is a tree-chained object. Each correlation object a.k.a. node, contains a variable name, a set of variable values
@@ -25,13 +24,33 @@ corresponding to the variable name and a list of children nodes called subcorrel
 """
 
     def __init__(self):
-        self._checkSubCorrelationIterableOrItemCount(self._subCorrelationList, self._itemCount)
+        self._check_sub_correlation_iterable_or_item_count(self._sub_correlation_list, self._item_count)
         
         # Converting iterables to list. 
-        if not isinstance(self._subCorrelationList, list):
-            self._subCorrelationList = list(self._subCorrelationList)
+        if not isinstance(self._sub_correlation_list, list):
+            self._sub_correlation_list = list(self._sub_correlation_list)
+
+    @classmethod
+    def load_from_dict(cls, correlation_dict):
+        kwargs = {}
         
-    def mergeableVariableDict(self):
+        # Keeping those items as is.
+        for key in ['variable_name', 'item_count']:
+            kwargs[key] = correlation_dict[key]
+        
+        # Converting value list to set.
+        kwargs['variable_value_set'] = set(correlation_dict['variable_value_list'])
+
+        # Converting sub correlation list dicts to `Correlation` objects list.
+        sub_correlation_list = []
+        for sub_correlation_dict in correlation_dict.get('sub_correlation_list', []):
+            sub_correlation_list.append(Correlation.load_from_dict(sub_correlation_dict))
+
+        kwargs['sub_correlation_list'] = sub_correlation_list
+
+        return Correlation(**kwargs)
+
+    def mergeable_variable_dict(self):
         """
         :IMPORTANT: internal use. 
 
@@ -47,15 +66,15 @@ Will return:
 
     OrderedDict([('a', set(['a1'])), ('b', set(['b1', 'b2']))])
 """
-        variableDict = OrderedDict([(self._variableName, self._variableValueSet)])
+        variable_dict = OrderedDict([(self._variable_name, self._variable_value_set)])
         
         # We yield items recursively until there are no children left or there's more than one child.
-        if len(self._subCorrelationList) == 1:
-            variableDict.update(self._subCorrelationList[0].mergeableVariableDict())
+        if len(self._sub_correlation_list) == 1:
+            variable_dict.update(self._sub_correlation_list[0].mergeable_variable_dict())
 
-        return variableDict
+        return variable_dict
     
-    def unmergeableSubCorrelationList(self):
+    def unmergeable_sub_correlation_list(self):
         """
         :IMPORTANT: internal use. 
 
@@ -75,41 +94,44 @@ and
     d = d1
         c = c2
 """
-        subCorrelationListLength = len(self._subCorrelationList)
+        sub_correlation_list_length = len(self._sub_correlation_list)
         
         # Node has no children.
-        if subCorrelationListLength == 0:
+        if sub_correlation_list_length == 0:
             return []
         
         # Node has only one child, we ask the child.
-        elif subCorrelationListLength == 1:
-            return self._subCorrelationList[0].unmergeableSubCorrelationList()
+        elif sub_correlation_list_length == 1:
+            return self._sub_correlation_list[0].unmergeable_sub_correlation_list()
         
         # Node has multiple children, those are the unmergeable correlations.
         else:
-            return copy.copy(self._subCorrelationList)
+            return copy.copy(self._sub_correlation_list)
 
     def __repr__(self):
-        return self._toString()
+        return self._to_string()
 
-    def _toString(self, indent = u""):
-        variableValueList = list(self._variableValueSet)
-        variableValueList.sort()
-        variableValueListAsString = u", ".join([unicode(v) for v in variableValueList])
-        reprString = u"{indent}{variableName} (count={itemCount}) = {variableValueList}\n"\
-            .format(indent = indent,
-                    itemCount = self.itemCount(),
-                    variableName = self._variableName,
-                    variableValueList = variableValueListAsString)
-        for subCorrelation in self._subCorrelationList:
-            reprString += subCorrelation._toString(indent + u"        ")
-        return reprString        
+    def _sorted_variable_value_list(self):
+        return sorted([value.encode('utf-8') for value in self._variable_value_set])
 
-    def _checkSubCorrelationIterableOrItemCount(self, subCorrelationIterable, itemCount):
+    def _to_string(self, indent = u""):
+        variable_value_list = list(self._variable_value_set)
+        variable_value_list.sort()
+        variable_value_list_as_string = u", ".join([unicode(v) for v in variable_value_list])
+        repr_string = u"{indent}{variable_name} (count={item_count}) = {variable_value_list}\n" \
+                      .format(indent = indent,
+                              item_count = self.item_count(),
+                              variable_name = self._variable_name,
+                              variable_value_list = variable_value_list_as_string)
+        for sub_correlation in self._sub_correlation_list:
+            repr_string += sub_correlation._to_string(indent + u"        ")
+        return repr_string
+
+    def _check_sub_correlation_iterable_or_item_count(self, sub_correlation_iterable, item_count):
         """
-    :type subCorrelationIterable: Iterable|None
-    :type itemCount: int|None
+    :type sub_correlation_iterable: Iterable|None
+    :type item_count: int|None
 """
-        # This is a 'xor', itemCount and subCorrelationList can't be both None or both not None.
-        if itemCount is None and subCorrelationIterable is None:
-            raise TypeError(u"'itemCount' and 'subCorrelationIterable' can't be both None.")
+        # This is a 'xor', item_count and subCorrelationList can't be both None or both not None.
+        if item_count is None and sub_correlation_iterable is None:
+            raise TypeError(u"'item_count' and 'sub_correlation_iterable' can't be both None.")
