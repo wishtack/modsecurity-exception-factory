@@ -121,11 +121,11 @@ class ModsecurityExcetionWriter(object):
         
         # Writing the 'SecRule' condition that skips to marker if variable is not matching.
         variable_value_regex = u"|".join([re.escape(variable_value) for variable_value in variable_value_list])
-        directive = u"""SecRule {variable_name} "!@rx ^({variable_value_regex})$" "id:{rule_id},t:none,nolog,pass,skipAfter:{marker_id}\""""\
+        directive = u"""SecRule {variable_name} "!@rx ^({variable_value_regex})$" "id:{rule_id},t:none,nolog,pass,skipAfter:{marker}\""""\
             .format(rule_id = self._generate_rule_id(),
                     variable_name = self._CONDITIONAL_VARIABLE_DICT[variable_name],
                     variable_value_regex = variable_value_regex,
-                    marker_id = self.marker_id(),
+                    marker = self._make_marker(self.marker_id()),
                     item_count = item_count)
         self._write_directive(context, directive)
 
@@ -162,11 +162,13 @@ class ModsecurityExcetionWriter(object):
     def _write_marker(self, context, marker_id):
         # Writing the marker.
         self._write_directive(context, u"")
-        self._write_directive(context, u"SecMarker {marker_prefix}{marker_id}"\
-                                           .format(marker_prefix = self._marker_prefix,
-                                                   marker_id = marker_id))
+        self._write_directive(context, u"SecMarker {marker}".format(marker = self._make_marker(marker_id)))
     
     def _generate_rule_id(self):
         rule_id = self._rule_id
         self._rule_id += 1
         return rule_id
+
+    def _make_marker(self, marker_id):
+        return u"{marker_prefix}{marker_id}".format(marker_prefix = self._marker_prefix,
+                                                    marker_id = marker_id)
