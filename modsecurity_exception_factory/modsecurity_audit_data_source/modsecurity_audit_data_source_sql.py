@@ -26,7 +26,7 @@ class ModsecurityAuditDataSourceSQL(IModsecurityAuditDataSource):
     @contract
     def __init__(self, dataBaseUrl):
         """
-    :type dataBaseUrl: unicode
+        :type dataBaseUrl: unicode
 """
         self._dataBaseUrl = dataBaseUrl
         self._sqlEngine = create_engine(dataBaseUrl)
@@ -56,7 +56,7 @@ class ModsecurityAuditDataSourceSQL(IModsecurityAuditDataSource):
     @contract
     def itemDictIterable(self, variableNameList):
         """
-    :type variableNameList: list(str)
+        :type variableNameList: list(str)
 """
         return ModsecurityAuditItemDictIterableSQL(self._sessionMaker, variableNameList)
 

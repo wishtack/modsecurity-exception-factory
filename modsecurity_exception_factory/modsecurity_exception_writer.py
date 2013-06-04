@@ -38,6 +38,7 @@ class ModsecurityExcetionWriter(object):
 
     @synthesize_member('depth', default = 0)
     @synthesize_member('value_list_dict', contract = 'dict(str:list(str))', default = {})
+    @synthesize_member('item_count', default = None)
     @synthesize_constructor()
     class _Context(object):
         
@@ -76,11 +77,13 @@ class ModsecurityExcetionWriter(object):
     def _write_correlation(self, context, correlation):
         marker_id = None # No marker to write.
         variable_name = correlation.variable_name()
+        child_context = copy.deepcopy(context)
 
         # Adding variable values to context if it's an action variable        
         if variable_name in self._ACTION_VARIABLE_LIST:
-            context.extend_value_list(variable_name, list(correlation.variable_value_set()))
-            self._write_correlation_list(copy.deepcopy(context), correlation.sub_correlation_list())
+            child_context.extend_value_list(variable_name, list(correlation.variable_value_set()))
+            child_context.set_item_count(correlation.item_count())
+            self._write_correlation_list(child_context, correlation.sub_correlation_list())
         
         # Conditional rule.
         elif variable_name in self._CONDITIONAL_VARIABLE_DICT.keys():
@@ -91,7 +94,7 @@ class ModsecurityExcetionWriter(object):
             
             # Incrementing marker id and depth.
             self._marker_id += 1
-            child_context = copy.deepcopy(context)
+            
             child_context.increment_depth()
             self._write_correlation_list(child_context, correlation.sub_correlation_list())
             
@@ -103,10 +106,10 @@ class ModsecurityExcetionWriter(object):
             raise UnknownVariable(variable_name = variable_name)
     
     def _write_conditional_rule(self, context, correlation):
-        self._write_directive(context, u"# Hit Count: {item_count}".format(item_count = correlation.item_count()))
-
         # @hack: ignoring 'None' values.
         variable_value_list = sorted(value for value in correlation.variable_value_set() if value is not None)
+
+        self._write_hit_count_comment_line(context, correlation.item_count())
         
         # Writing the 'SecRule' condition that skips to marker if variable is not matching.
         variable_value_regex = u"|".join([re.escape(variable_value) for variable_value in variable_value_list])
@@ -126,6 +129,8 @@ class ModsecurityExcetionWriter(object):
         payload_container_list = value_list_dict.get(SQLModsecurityAuditEntryMessage.payload_container.name)
         rule_id_list = value_list_dict.get(SQLModsecurityAuditEntryMessage.rule_id.name)
         
+        self._write_hit_count_comment_line(context, context.item_count())
+        
         if payload_container_list:
             directive = u"""SecAction "t:none,nolog,pass,ctl:'ruleRemoveById={rule_id_list_string}'\""""\
                 .format(rule_id_list_string = u",".join(unicode(r) for r in rule_id_list))
@@ -141,3 +146,6 @@ class ModsecurityExcetionWriter(object):
         indentation = context.depth() * u"    "
         self.stream().write(u"{indentation}{directive}\n"\
                             .format(indentation = indentation, directive = directive))
+
+    def _write_hit_count_comment_line(self, context, item_count):
+        self._write_directive(context, u"# Hit Count: {item_count}".format(item_count = item_count))
