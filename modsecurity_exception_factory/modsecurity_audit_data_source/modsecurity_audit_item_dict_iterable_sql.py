@@ -14,7 +14,6 @@ from modsecurity_exception_factory.modsecurity_audit_data_source.sql_filter impo
 from modsecurity_exception_factory.modsecurity_audit_data_source.sql_filter_condition import SQLFilterCondition
 from modsecurity_exception_factory.modsecurity_audit_data_source.sql_modsecurity_audit_entry_message import \
     SQLModsecurityAuditEntryMessage
-from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.sql.expression import union, literal, desc, not_, and_, or_
 from sqlalchemy.sql.functions import count
 from synthetic.decorators import synthesizeMember, synthesizeConstructor
@@ -39,7 +38,6 @@ class ModsecurityAuditItemDictIterableSQL(IItemIterable):
     :type distinct: bool
     :type sqlFilterConditionListDict: dict(tuple:list(SQLFilterCondition))|None
 """
-
         if sqlFilterConditionListDict is None:
             sqlFilterConditionListDict = {}
         
@@ -69,7 +67,6 @@ class ModsecurityAuditItemDictIterableSQL(IItemIterable):
     :type variableValue: unicode|None
     :type negate: bool
 """
-
         # Adding variable to filter's variable list.
         sqlFilterCondition = SQLFilterCondition(variableName = variableName,
                                                 variableValue = variableValue,

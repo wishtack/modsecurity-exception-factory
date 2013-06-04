@@ -26,7 +26,7 @@ encoding//modsecurity_exception_factory/modsecurity_audit_log_parser/modsecurity
 encoding//modsecurity_exception_factory/modsecurity_audit_log_parser/modsecurity_audit_log_section_parser_factory.py=utf-8
 encoding//modsecurity_exception_factory/modsecurity_audit_log_parser/modsecurity_audit_log_section_parser_h.py=utf-8
 encoding//modsecurity_exception_factory/modsecurity_audit_log_parser/modsecurity_audit_log_section_parser_unknown.py=utf-8
-encoding//modsecurity_exception_factory/modsecurity_exception.py=utf-8
+encoding//modsecurity_exception_factory/modsecurity_exception_writer.py=utf-8
 encoding//modsecurity_exception_factory/utils/__init__.py=utf-8
 encoding//modsecurity_exception_factory/utils/config.py=utf-8
 encoding//tests/common.py=utf-8
@@ -37,3 +37,4 @@ encoding//tests/test_correlation_merge_delegate.py=utf-8
 encoding//tests/test_correlation_serializer_yaml.py=utf-8
 encoding//tests/test_modsecurity_audit_data_source_sql.py=utf-8
 encoding//tests/test_modsecurity_audit_log_parser.py=utf-8
+encoding//tests/test_modsecurity_exception_writer.py=utf-8

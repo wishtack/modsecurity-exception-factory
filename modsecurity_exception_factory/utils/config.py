@@ -34,10 +34,10 @@ class Config:
         self._configFilePath = configFilePath
         self._configDict = None
         self._configDefaultDict = {self._KEY_IGNORE_FILTER_LIST: {},
-                                   self._KEY_VARIABLE_NAME_LIST: ['hostName',
-                                                                  'requestFileName',
-                                                                  'payloadContainer',
-                                                                  'ruleId'],
+                                   self._KEY_VARIABLE_NAME_LIST: ['host_name',
+                                                                  'request_file_name',
+                                                                  'payload_container',
+                                                                  'rule_id'],
                                    self._KEY_MINIMUM_OCCURRENCE_COUNT_THRESHOLD: 0,
                                    self._KEY_MAXIMUM_VALUE_COUNT_THRESHOLD: None}
 

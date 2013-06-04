@@ -10,7 +10,6 @@
 from collections import OrderedDict
 from synthetic import synthesize_constructor, synthesize_member
 import copy
-import yaml
 
 @synthesize_member('variable_name', contract = str, read_only = True)
 @synthesize_member('variable_value_set', contract = 'Iterable', read_only = True)
@@ -39,7 +38,7 @@ corresponding to the variable name and a list of children nodes called subcorrel
             kwargs[key] = correlation_dict[key]
         
         # Converting value list to set.
-        kwargs['variable_value_set'] = set(correlation_dict['variable_value_list'])
+        kwargs['variable_value_set'] = set(unicode(variable_value) for variable_value in correlation_dict['variable_value_list'])
 
         # Converting sub correlation list dicts to `Correlation` objects list.
         sub_correlation_list = []

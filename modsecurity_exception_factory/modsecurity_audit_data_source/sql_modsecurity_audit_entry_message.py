@@ -14,7 +14,7 @@ class SQLModsecurityAuditEntryMessage(SQLBase):
     __tablename__ = 'messages'
     
     index = Column(Integer, primary_key = True)
-    hostName = Column(String, index = True)
-    requestFileName = Column(String, index = True)
-    payloadContainer = Column(String, index = True)
-    ruleId = Column(String, index = True)
+    host_name = Column(String, index = True)
+    request_file_name = Column(String, index = True)
+    payload_container = Column(String, index = True)
+    rule_id = Column(String, index = True)

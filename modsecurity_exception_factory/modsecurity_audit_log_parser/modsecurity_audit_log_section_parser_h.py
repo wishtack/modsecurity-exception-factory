@@ -17,8 +17,8 @@ new_contract('ModsecurityAuditLogParserState', ModsecurityAuditLogParserState)
 
 class ModsecurityAuditLogSectionParserH(IModsecurityAuditLogSectionParser):    
     def __init__(self):
-        self._regexMessage = re.compile(r"^Message: .* (?:at|against) (?P<payloadContainer>[^. ]+).* \[id \"(?P<ruleId>\d+)\"\]")
-        self._regexMessageInboundAnomalyScore = re.compile(r"Total Score: (?P<inboundAnomalyScore>\d+)\b")
+        self._regexMessage = re.compile(r"^Message: .* (?:at|against) (?P<payload_container>[^. ]+).* \[id \"(?P<rule_id>\d+)\"\]")
+        self._regexMessageInboundAnomalyScore = re.compile(r"Total Score: (?P<inbound_anomaly_score>\d+)\b")
     
     @contract
     def parseLine(self, state):
@@ -43,11 +43,11 @@ class ModsecurityAuditLogSectionParserH(IModsecurityAuditLogSectionParser):
     
     def _parseMessageInboundAnomalyScore(self, modsecurityAuditEntry, strLine, message):
         # Inbound anomaly score extraction from rules 981174 and 981176.
-        if message.ruleId() not in ["981174", "981176"]:
+        if message.rule_id() not in ["981174", "981176"]:
             return
         
         scoreSearchResult = self._regexMessageInboundAnomalyScore.search(strLine)
         if scoreSearchResult is None:
             return
         
-        modsecurityAuditEntry.setInboundAnomalyScore(int(scoreSearchResult.groupdict()['inboundAnomalyScore']))
+        modsecurityAuditEntry.set_inbound_anomaly_score(int(scoreSearchResult.groupdict()['inbound_anomaly_score']))

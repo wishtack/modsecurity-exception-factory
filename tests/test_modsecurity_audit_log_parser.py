@@ -30,23 +30,23 @@ class TestModsecurityAuditLogParser(unittest.TestCase):
         self.assertEqual(238, len(entryList))
         
         # Checking host name.
-        self.assertEqual(18, self._filterEntryListAndCountByPredicate(entryList, 'hostName', u"test.domain.com"))
-        self.assertEqual(218, self._filterEntryListAndCountByPredicate(entryList, 'hostName', u"1.1.1.1"))
-        self.assertEqual(2, self._filterEntryListAndCountByPredicate(entryList, 'hostName', None))
+        self.assertEqual(18, self._filterEntryListAndCountByPredicate(entryList, 'host_name', u"test.domain.com"))
+        self.assertEqual(218, self._filterEntryListAndCountByPredicate(entryList, 'host_name', u"1.1.1.1"))
+        self.assertEqual(2, self._filterEntryListAndCountByPredicate(entryList, 'host_name', None))
 
         # Checking inbound anomaly score.
         self.assertEqual(3, self._filterEntryListAndCountByPredicate(entryList,
-                                                                     'requestFileName',
+                                                                     'request_file_name',
                                                                      u"/agilefant/ajax/iterationData.action"))
         
         self.assertEqual(3, self._filterEntryListAndCountByPredicate(entryList,
-                                                                     'inboundAnomalyScore',
+                                                                     'inbound_anomaly_score',
                                                                      0)) # The last incomplete entry + the two first custom ones.
         self.assertEqual(229, self._filterEntryListAndCountByPredicate(entryList,
-                                                                       'inboundAnomalyScore',
+                                                                       'inbound_anomaly_score',
                                                                        2))
         self.assertEqual(6, self._filterEntryListAndCountByPredicate(entryList,
-                                                                     'inboundAnomalyScore',
+                                                                     'inbound_anomaly_score',
                                                                      4))
 
         # Checking message list.        
@@ -69,7 +69,7 @@ class TestModsecurityAuditLogParser(unittest.TestCase):
 
     def _filterEntryListAndCountByMessage(self, entryList, payloadContainerRuleIdPairList):
         def filterFunction(entry):
-            return [(message.payloadContainer(), message.ruleId()) for message in entry.messageList()] \
+            return [(message.payload_container(), message.rule_id()) for message in entry.message_list()] \
                 == payloadContainerRuleIdPairList
         return self._filterEntryListAndCount(entryList, filterFunction)
     
