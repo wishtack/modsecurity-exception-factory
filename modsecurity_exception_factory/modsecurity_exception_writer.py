@@ -129,12 +129,6 @@ class ModsecurityExcetionWriter(object):
                     item_count = item_count)
         self._write_directive(context, directive)
 
-    def _write_marker(self, context, marker_id):
-        # Writing the marker.
-        self._write_directive(context, u"SecMarker {marker_prefix}{marker_id}\n"\
-                                           .format(marker_prefix = self._marker_prefix,
-                                                   marker_id = marker_id))
-    
     def _write_leaf(self, context):
         value_list_dict = context.value_list_dict()
         payload_container_list = value_list_dict.get(SQLModsecurityAuditEntryMessage.payload_container.name)
@@ -162,8 +156,16 @@ class ModsecurityExcetionWriter(object):
                             .format(indentation = indentation, directive = directive))
 
     def _write_hit_count_comment_line(self, context, item_count):
+        self._write_directive(context, u"")
         self._write_directive(context, u"# Hit Count: {item_count}".format(item_count = item_count))
-        
+
+    def _write_marker(self, context, marker_id):
+        # Writing the marker.
+        self._write_directive(context, u"")
+        self._write_directive(context, u"SecMarker {marker_prefix}{marker_id}"\
+                                           .format(marker_prefix = self._marker_prefix,
+                                                   marker_id = marker_id))
+    
     def _generate_rule_id(self):
         rule_id = self._rule_id
         self._rule_id += 1
