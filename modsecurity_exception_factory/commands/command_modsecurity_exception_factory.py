@@ -8,7 +8,6 @@
 #
 
 from contracts import contract, new_contract
-from modsecurity_exception_factory.utils import Config
 from modsecurity_exception_factory.correlation.correlation_engine import \
     CorrelationEngine
 from modsecurity_exception_factory.correlation.correlation_progress_listener_console import \
@@ -17,10 +16,12 @@ from modsecurity_exception_factory.modsecurity_audit_data_source import \
     IModsecurityAuditDataSource, ModsecurityAuditDataSourceSQL
 from modsecurity_exception_factory.modsecurity_audit_log_parser import \
     ModsecurityAuditLogParser
+from modsecurity_exception_factory.utils import Config
 import argparse
 import contracts
 import io
 import sys
+from modsecurity_exception_factory.modsecurity_exception_writer import ModsecurityExcetionWriter
 
 new_contract('IModsecurityAuditDataSource', IModsecurityAuditDataSource)
 
@@ -68,15 +69,15 @@ class CommandModsecurityExceptionFactory:
         if argumentObject.modsecurityAuditLogPath is not None:
             self._parseFile(argumentObject.modsecurityAuditLogPath, dataSource)
 
-        # Correlate.
+        # Preparing correlation engine.
         correlationEngine = CorrelationEngine(variableNameList,
                                               ignoredVariableDict,
                                               minimumOccurrenceCountThreshold,
                                               maximumValueCountThreshold)
         correlationEngine.addProgressListener(CorrelationProgressListenerConsole(sys.stderr))
         
-        for correlation in correlationEngine.correlate(dataSource):
-            self._printCorrelation(correlation)
+        # Correlating and writing exceptions progressively using the power of Python generators.
+        ModsecurityExcetionWriter(stream = sys.stdout).write(correlationEngine.correlate(dataSource))
     
         return 0
 

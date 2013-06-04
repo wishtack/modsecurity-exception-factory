@@ -19,8 +19,8 @@ class UnknownVariable(Exception):
     def __init__(self, variable_name):
         super(self).__init__(u"Unknown variable name: '{variable_name}'".format(variable_name = variable_name))
 
-@synthesize_member('marker_id', default = 1, read_only = True)
 @synthesize_member('stream')
+@synthesize_member('marker_id', default = 1, read_only = True)
 @synthesize_constructor()
 class ModsecurityExcetionWriter(object):
 
@@ -105,8 +105,10 @@ class ModsecurityExcetionWriter(object):
     def _write_conditional_rule(self, context, correlation):
         self._write_directive(context, u"# Hit Count: {item_count}".format(item_count = correlation.item_count()))
 
+        # @hack: ignoring 'None' values.
+        variable_value_list = sorted(value for value in correlation.variable_value_set() if value is not None)
+        
         # Writing the 'SecRule' condition that skips to marker if variable is not matching.
-        variable_value_list = sorted(list(correlation.variable_value_set()))
         variable_value_regex = u"|".join([re.escape(variable_value) for variable_value in variable_value_list])
         directive = u"""SecRule {variable_name} "!@rx ^({variable_value_regex})$" "t:none,nolog,pass,skipAfter:{marker_id}\""""\
             .format(variable_name = self._CONDITIONAL_VARIABLE_DICT[correlation.variable_name()],
