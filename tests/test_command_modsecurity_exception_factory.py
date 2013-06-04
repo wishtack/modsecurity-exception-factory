@@ -71,13 +71,9 @@ SecRule HOSTNAME "!@rx ^(test\.domain\.com)$" "id:10007,t:none,nolog,pass,skipAf
 SecMarker EXCEPTION_4
 
 # Hit Count: 8
-SecRule HOSTNAME "!@rx ^()$" "id:10016,t:none,nolog,pass,skipAfter:8"
+SecRule REQUEST_FILENAME "!@rx ^(\/agilefant\/login\.jsp)$" "id:10016,t:none,nolog,pass,skipAfter:8"
     # Hit Count: 8
-    SecRule REQUEST_FILENAME "!@rx ^(\/agilefant\/login\.jsp)$" "id:10017,t:none,nolog,pass,skipAfter:9"
-        # Hit Count: 8
-        SecAction "id:10018,t:none,nolog,pass,ctl:'ruleRemoveById=111111,222222'"
-    SecMarker EXCEPTION_9
-
+    SecAction "id:10017,t:none,nolog,pass,ctl:'ruleRemoveById=111111,222222'"
 SecMarker EXCEPTION_8
 
 """

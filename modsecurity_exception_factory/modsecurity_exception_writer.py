@@ -39,7 +39,7 @@ class ModsecurityExcetionWriter(object):
                            
 
     @synthesize_member('depth', default = 0)
-    @synthesize_member('value_list_dict', contract = 'dict(str:list(str))', default = {})
+    @synthesize_member('value_list_dict', contract = 'dict(str:list(unicode))', default = {})
     @synthesize_member('item_count', default = None)
     @synthesize_constructor()
     class _Context(object):
@@ -77,20 +77,30 @@ class ModsecurityExcetionWriter(object):
             self._write_leaf(context)
     
     def _write_correlation(self, context, correlation):
-        marker_id = None # No marker to write.
         variable_name = correlation.variable_name()
-        child_context = copy.deepcopy(context)
+        marker_id = None # Will be set only if correlation produces a conditional rule with valid values.
 
+        # @hack: ignoring 'None' values.
+        variable_value_list = sorted(value for value in correlation.variable_value_set() if value is not None)
+
+        child_context = copy.deepcopy(context)
+        
+        # Unknown variable.
+        if variable_name not in self._ACTION_VARIABLE_LIST + self._CONDITIONAL_VARIABLE_DICT.keys():
+            raise UnknownVariable(variable_name = variable_name)
+        
         # Adding variable values to context if it's an action variable        
         if variable_name in self._ACTION_VARIABLE_LIST:
-            child_context.extend_value_list(variable_name, list(correlation.variable_value_set()))
+            child_context.extend_value_list(variable_name, variable_value_list)
             child_context.set_item_count(correlation.item_count())
-            self._write_correlation_list(child_context, correlation.sub_correlation_list())
         
         # Conditional rule.
-        elif variable_name in self._CONDITIONAL_VARIABLE_DICT.keys():
-            self._write_conditional_rule(context, correlation)
-            
+        if variable_name in self._CONDITIONAL_VARIABLE_DICT.keys() and variable_value_list:
+            self._write_conditional_rule(context,
+                                         variable_name,
+                                         variable_value_list,
+                                         correlation.item_count())
+        
             # Remember current marker id because the global marker id will be incremented below and during recursion through sub correlations.
             marker_id = self._marker_id
             
@@ -98,29 +108,25 @@ class ModsecurityExcetionWriter(object):
             self._marker_id += 1
             
             child_context.increment_depth()
-            self._write_correlation_list(child_context, correlation.sub_correlation_list())
+
+        # In both situations (action or conditional), write sub correlations.
+        self._write_correlation_list(child_context, correlation.sub_correlation_list())
             
+        if marker_id is not None:
             # Writing the marker.
             self._write_marker(context, marker_id)
-        
-        # Unknown variable.
-        else:
-            raise UnknownVariable(variable_name = variable_name)
     
-    def _write_conditional_rule(self, context, correlation):
-        # @hack: ignoring 'None' values.
-        variable_value_list = sorted(value for value in correlation.variable_value_set() if value is not None)
-
-        self._write_hit_count_comment_line(context, correlation.item_count())
+    def _write_conditional_rule(self, context, variable_name, variable_value_list, item_count):
+        self._write_hit_count_comment_line(context, item_count)
         
         # Writing the 'SecRule' condition that skips to marker if variable is not matching.
         variable_value_regex = u"|".join([re.escape(variable_value) for variable_value in variable_value_list])
         directive = u"""SecRule {variable_name} "!@rx ^({variable_value_regex})$" "id:{rule_id},t:none,nolog,pass,skipAfter:{marker_id}\""""\
             .format(rule_id = self._generate_rule_id(),
-                    variable_name = self._CONDITIONAL_VARIABLE_DICT[correlation.variable_name()],
+                    variable_name = self._CONDITIONAL_VARIABLE_DICT[variable_name],
                     variable_value_regex = variable_value_regex,
                     marker_id = self.marker_id(),
-                    item_count = correlation.item_count())
+                    item_count = item_count)
         self._write_directive(context, directive)
 
     def _write_marker(self, context, marker_id):
