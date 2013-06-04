@@ -142,7 +142,7 @@ class ModsecurityExcetionWriter(object):
         
         self._write_hit_count_comment_line(context, context.item_count())
         
-        if payload_container_list:
+        if not payload_container_list:
             directive = u"""SecAction "id:{rule_id},t:none,nolog,pass,ctl:'ruleRemoveById={rule_id_list_string}'\""""\
                 .format(rule_id = self._generate_rule_id(),
                         rule_id_list_string = u",".join(unicode(r) for r in rule_id_list))
