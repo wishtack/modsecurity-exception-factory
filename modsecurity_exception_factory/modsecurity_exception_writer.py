@@ -20,7 +20,9 @@ class UnknownVariable(Exception):
         super(self).__init__(u"Unknown variable name: '{variable_name}'".format(variable_name = variable_name))
 
 @synthesize_member('stream')
+@synthesize_member('rule_id', default = 10000)
 @synthesize_member('marker_id', default = 1, read_only = True)
+@synthesize_member('marker_prefix', default = u"EXCEPTION_")
 @synthesize_constructor()
 class ModsecurityExcetionWriter(object):
 
@@ -113,8 +115,9 @@ class ModsecurityExcetionWriter(object):
         
         # Writing the 'SecRule' condition that skips to marker if variable is not matching.
         variable_value_regex = u"|".join([re.escape(variable_value) for variable_value in variable_value_list])
-        directive = u"""SecRule {variable_name} "!@rx ^({variable_value_regex})$" "t:none,nolog,pass,skipAfter:{marker_id}\""""\
-            .format(variable_name = self._CONDITIONAL_VARIABLE_DICT[correlation.variable_name()],
+        directive = u"""SecRule {variable_name} "!@rx ^({variable_value_regex})$" "id:{rule_id},t:none,nolog,pass,skipAfter:{marker_id}\""""\
+            .format(rule_id = self._generate_rule_id(),
+                    variable_name = self._CONDITIONAL_VARIABLE_DICT[correlation.variable_name()],
                     variable_value_regex = variable_value_regex,
                     marker_id = self.marker_id(),
                     item_count = correlation.item_count())
@@ -122,7 +125,9 @@ class ModsecurityExcetionWriter(object):
 
     def _write_marker(self, context, marker_id):
         # Writing the marker.
-        self._write_directive(context, u"SecMarker {marker_id}\n".format(marker_id = marker_id))
+        self._write_directive(context, u"SecMarker {marker_prefix}{marker_id}\n"\
+                                           .format(marker_prefix = self._marker_prefix,
+                                                   marker_id = marker_id))
     
     def _write_leaf(self, context):
         value_list_dict = context.value_list_dict()
@@ -132,14 +137,17 @@ class ModsecurityExcetionWriter(object):
         self._write_hit_count_comment_line(context, context.item_count())
         
         if payload_container_list:
-            directive = u"""SecAction "t:none,nolog,pass,ctl:'ruleRemoveById={rule_id_list_string}'\""""\
-                .format(rule_id_list_string = u",".join(unicode(r) for r in rule_id_list))
+            directive = u"""SecAction "id:{rule_id},t:none,nolog,pass,ctl:'ruleRemoveById={rule_id_list_string}'\""""\
+                .format(rule_id = self._generate_rule_id(),
+                        rule_id_list_string = u",".join(unicode(r) for r in rule_id_list))
             self._write_directive(context, directive)
         
         else:
-            for rule_id in rule_id_list:
-                directive = u"""SecAction "t:none,nolog,pass,ctl:'ruleRemoveTargetById={rule_id};{payload_container_list_string}'\""""\
-                    .format(rule_id = rule_id, payload_container_list_string = u",".join(payload_container_list))
+            for rule_id_to_modify in rule_id_list:
+                directive = u"""SecAction "id:{rule_id},t:none,nolog,pass,ctl:'ruleRemoveTargetById={rule_id_to_modify};{payload_container_list_string}'\""""\
+                    .format(rule_id = self._generate_rule_id(),
+                            rule_id_to_modify = rule_id_to_modify,
+                            payload_container_list_string = u",".join(payload_container_list))
                 self._write_directive(context, directive)
 
     def _write_directive(self, context, directive):
@@ -149,3 +157,8 @@ class ModsecurityExcetionWriter(object):
 
     def _write_hit_count_comment_line(self, context, item_count):
         self._write_directive(context, u"# Hit Count: {item_count}".format(item_count = item_count))
+        
+    def _generate_rule_id(self):
+        rule_id = self._rule_id
+        self._rule_id += 1
+        return rule_id
