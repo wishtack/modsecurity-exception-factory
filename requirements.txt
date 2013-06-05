@@ -1,4 +1,0 @@
-networkx==1.7
-Orange==2.5a4
-PyContracts==1.4.0
-SQLAlchemy==0.8.0b2
