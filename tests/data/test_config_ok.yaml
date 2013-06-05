@@ -1,0 +1,13 @@
+
+ignore:
+    rule_id: [111111, 222222, 333333]
+    host_name: [1.1.1.1]
+
+variables:
+    - aaa
+    - bbb
+    - ccc
+
+minimum_occurrence_count_threshold: 10
+
+maximum_value_count_threshold: 20
