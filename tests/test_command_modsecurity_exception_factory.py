@@ -15,14 +15,14 @@ from modsecurity_exception_factory.correlation.correlation_engine import \
     CorrelationEngine
 from sqlalchemy.exc import OperationalError
 from tests.common import cleanUp, MODSECURITY_AUDIT_LOG_SAMPLE_PATH, \
-    MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL, testFilePath
+    MODSECURITY_AUDIT_ENTRY_DATA_SOURCE_SQLITE_URL, makeTestFilePath
 import sys
 import unittest
 
 class TestCommandModsecurityExceptionFactory(unittest.TestCase):
 
     def setUp(self):
-        self._test_config_file_path = testFilePath(u"data/test_command_modsecurity_exception_factory.yaml")
+        self._test_config_file_path = makeTestFilePath(u"data/test_command_modsecurity_exception_factory.yaml")
 
         self._expected_output = """\
 

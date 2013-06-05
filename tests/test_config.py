@@ -7,14 +7,14 @@
 # $Id$
 #
 
-from .common import testFilePath
+from .common import makeTestFilePath
 from modsecurity_exception_factory.utils import Config
 import unittest
 
 class TestConfig(unittest.TestCase):
 
-    _TEST_CONFIG_OK = testFilePath(u"data/test_config_ok.yaml")
-    _TEST_CONFIG_EMPTY = testFilePath(u"data/test_config_empty.yaml")
+    _TEST_CONFIG_OK = makeTestFilePath(u"data/test_config_ok.yaml")
+    _TEST_CONFIG_EMPTY = makeTestFilePath(u"data/test_config_empty.yaml")
 
     def testOK(self):
         config = Config(self._TEST_CONFIG_OK)
