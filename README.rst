@@ -6,7 +6,8 @@ ModSecurity Exception Generator
 Installation
 ************
 
-.. code-block:: shell
+.. code-block:: bash
+
  pip install modsecurity-exception-generator
 
 Usage
@@ -34,13 +35,15 @@ Command options
 Basic examples
 ==============
 
-.. code-block:: shell
+.. code-block:: bash
+    
     modsecurity-exception-generator \
         -i /path/to/modsec_audit.log \
         -d "sqlite:////tmp/service.db" \
     > modsecurity_crs_15_exceptions.conf
 
-.. code-block:: shell
+.. code-block:: bash
+    
     zcat modsec_audit.log.*.gz \
     | modsecurity-exception-generator \
         -i - \
@@ -70,7 +73,8 @@ example
 To ignore any log message produced by the rule with the id 981176.
 
 .. code-block::
-    ignore:
+     
+     ignore:
         rule_id: [981176]
 
 This can also be applied to other variables like '**host_name**' *(targeted host name)*, '**request_filename**' *(targeted url)* or '**payload_container**' *(the variable that matched the rule)*.
@@ -86,6 +90,7 @@ maximum_value_count_threshold
 Sometimes, exceptions rules can have conditions with too many values like the following example.
 
 .. code-block::
+    
     SecRule REQUEST_FILENAME "@rx ^(/foo_bar|/blabla|/test_2/|...)$" ...
 
 This condition can be ignored by setting **maximum_value_count_threshold** to a value lesser than the number of values in the regular expression.
@@ -94,6 +99,7 @@ Configuration example for the Core Rule Set
 ===========================================
 
 .. code-block::
+    
     ignore:
         rule_id: [981174, 981176, 981203, 981200, 981201, 981202, 981203, 981204, 981205, 981220]
     
