@@ -153,7 +153,8 @@ class ModsecurityExcetionWriter(object):
     def _write_directive(self, context, directive):
         indentation = context.depth() * u"    "
         self.stream().write(u"{indentation}{directive}\n"\
-                            .format(indentation = indentation, directive = directive))
+                            .format(indentation = indentation, directive = directive)\
+                            .encode('utf-8'))
 
     def _write_hit_count_comment_line(self, context, item_count):
         self._write_directive(context, u"")
