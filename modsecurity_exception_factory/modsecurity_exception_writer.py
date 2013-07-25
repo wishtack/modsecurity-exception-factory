@@ -142,7 +142,7 @@ class ModsecurityExcetionWriter(object):
                         rule_id_list_string = u",".join(unicode(r) for r in rule_id_list))
             self._write_directive(context, directive)
         
-        else:
+        elif rule_id_list:
             for rule_id_to_modify in rule_id_list:
                 directive = u"""SecAction "id:{rule_id},t:none,nolog,pass,ctl:'ruleRemoveTargetById={rule_id_to_modify};{payload_container_list_string}'\""""\
                     .format(rule_id = self._generate_rule_id(),

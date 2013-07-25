@@ -117,13 +117,9 @@ variable_name: request_file_name
 item_count: 8
 variable_value_list: [/agilefant/login.jsp]
 sub_correlation_list:
-- variable_name: rule_id
+- variable_name: payload_container
   item_count: 8
-  variable_value_list: ['111111', '222222']
-  sub_correlation_list:
-  - variable_name: payload_container
-    item_count: 8
-    variable_value_list: ['ARGS:a', 'ARGS:b']
+  variable_value_list: ['ARGS:a', 'ARGS:b']
 """
 
         self._expected_output = u"""\
@@ -195,8 +191,6 @@ SecMarker EXCEPTION_4
 SecRule REQUEST_FILENAME "!@rx ^(\/agilefant\/login\.jsp)$" "id:10017,t:none,nolog,pass,skipAfter:EXCEPTION_8"
     
     # Hit Count: 8
-    SecAction "id:10018,t:none,nolog,pass,ctl:'ruleRemoveTargetById=111111;ARGS:a,ARGS:b'"
-    SecAction "id:10019,t:none,nolog,pass,ctl:'ruleRemoveTargetById=222222;ARGS:a,ARGS:b'"
 
 SecMarker EXCEPTION_8
 """
