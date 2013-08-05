@@ -21,7 +21,7 @@ import argparse
 import contracts
 import io
 import sys
-from modsecurity_exception_factory.modsecurity_exception_writer import ModsecurityExcetionWriter
+from modsecurity_exception_factory.modsecurity_exception_writer import ModsecurityExceptionWriter
 
 new_contract('IModsecurityAuditDataSource', IModsecurityAuditDataSource)
 
@@ -77,7 +77,7 @@ class CommandModsecurityExceptionFactory:
         correlationEngine.addProgressListener(CorrelationProgressListenerConsole(sys.stderr))
         
         # Correlating and writing exceptions progressively using the power of Python generators.
-        ModsecurityExcetionWriter(stream = sys.stdout).write(correlationEngine.correlate(dataSource))
+        ModsecurityExceptionWriter(stream = sys.stdout).write(correlationEngine.correlate(dataSource))
     
         return 0
 

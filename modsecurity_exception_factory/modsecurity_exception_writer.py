@@ -24,14 +24,14 @@ class UnknownVariable(Exception):
 @synthesize_member('marker_id', default = 1, read_only = True)
 @synthesize_member('marker_prefix', default = u"EXCEPTION_")
 @synthesize_constructor()
-class ModsecurityExcetionWriter(object):
+class ModsecurityExceptionWriter(object):
 
     # Variables are splitted in two types, 'conditional' and 'action'.
     # Conditional variables are used in "SecRule variable_name '@rx...'" kind of rules.
     # Action variables are the variables who are used in "SecAction ...removeTargetById" kind of rules.
 
     # Dictionary that maps model variables to ModSecurity rules variables.
-    _CONDITIONAL_VARIABLE_DICT = {SQLModsecurityAuditEntryMessage.host_name.name: u"HOSTNAME",
+    _CONDITIONAL_VARIABLE_DICT = {SQLModsecurityAuditEntryMessage.host_name.name: u"SERVER_NAME",
                                   SQLModsecurityAuditEntryMessage.request_file_name.name: u"REQUEST_FILENAME"}
     
     _ACTION_VARIABLE_LIST = [SQLModsecurityAuditEntryMessage.rule_id.name,
@@ -62,7 +62,7 @@ class ModsecurityExcetionWriter(object):
         :type correlation_iterable: Iterable
 """
         # New context.
-        context = ModsecurityExcetionWriter._Context()
+        context = ModsecurityExceptionWriter._Context()
         
         self._write_correlation_list(context, correlation_iterable)
         

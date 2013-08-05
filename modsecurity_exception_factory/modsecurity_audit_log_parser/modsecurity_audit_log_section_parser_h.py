@@ -17,7 +17,7 @@ new_contract('ModsecurityAuditLogParserState', ModsecurityAuditLogParserState)
 
 class ModsecurityAuditLogSectionParserH(IModsecurityAuditLogSectionParser):    
     def __init__(self):
-        self._regexMessage = re.compile(r"^Message: .* (?:at|against) (?P<payload_container>[^. ]+).* \[id \"(?P<rule_id>\d+)\"\]")
+        self._regexMessage = re.compile(r"^Message: .* (?:at|against) \"?(?P<payload_container>[^\". ]+).* \[id \"(?P<rule_id>\d+)\"\]")
         self._regexMessageInboundAnomalyScore = re.compile(r"Total Score: (?P<inbound_anomaly_score>\d+)\b")
     
     @contract
