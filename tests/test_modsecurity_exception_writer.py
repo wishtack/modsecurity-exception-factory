@@ -11,7 +11,7 @@ from StringIO import StringIO
 from modsecurity_exception_factory.correlation.correlation_serializer_yaml import \
     CorrelationSerializerYaml
 from modsecurity_exception_factory.modsecurity_exception_writer import \
-    ModsecurityExcetionWriter
+    ModsecurityExceptionWriter
 import unittest
 
 class TestModsecurityExceptionWriter(unittest.TestCase):
@@ -199,5 +199,5 @@ SecMarker EXCEPTION_8
         correlation_iterable = CorrelationSerializerYaml().load(StringIO(self._correlation_yaml_data))
 
         output = StringIO()
-        ModsecurityExcetionWriter(stream = output).write(correlation_iterable)
+        ModsecurityExceptionWriter(stream = output).write(correlation_iterable)
         self.assertEqual(self._expected_output, output.getvalue())
