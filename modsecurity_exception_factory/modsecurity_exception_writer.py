@@ -31,7 +31,7 @@ class ModsecurityExcetionWriter(object):
     # Action variables are the variables who are used in "SecAction ...removeTargetById" kind of rules.
 
     # Dictionary that maps model variables to ModSecurity rules variables.
-    _CONDITIONAL_VARIABLE_DICT = {SQLModsecurityAuditEntryMessage.host_name.name: u"HOSTNAME",
+    _CONDITIONAL_VARIABLE_DICT = {SQLModsecurityAuditEntryMessage.host_name.name: u"SERVER_NAME",
                                   SQLModsecurityAuditEntryMessage.request_file_name.name: u"REQUEST_FILENAME"}
     
     _ACTION_VARIABLE_LIST = [SQLModsecurityAuditEntryMessage.rule_id.name,
