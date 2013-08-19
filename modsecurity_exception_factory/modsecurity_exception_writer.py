@@ -136,13 +136,17 @@ class ModsecurityExceptionWriter(object):
         
         self._write_hit_count_comment_line(context, context.item_count())
         
+        # No rule id, nothing to do.
+        if not rule_id_list:
+            return
+        
         if not payload_container_list:
             directive = u"""SecAction "id:{rule_id},t:none,nolog,pass,ctl:'ruleRemoveById={rule_id_list_string}'\""""\
                 .format(rule_id = self._generate_rule_id(),
                         rule_id_list_string = u",".join(unicode(r) for r in rule_id_list))
             self._write_directive(context, directive)
         
-        elif rule_id_list:
+        else:
             for rule_id_to_modify in rule_id_list:
                 directive = u"""SecAction "id:{rule_id},t:none,nolog,pass,ctl:'ruleRemoveTargetById={rule_id_to_modify};{payload_container_list_string}'\""""\
                     .format(rule_id = self._generate_rule_id(),
